@@ -64,26 +64,88 @@ canvas{width:100%;height:200px;cursor:pointer}
  
 .hidden{display:none} 
  
-/* Bottom Nav */ 
-.bottom-nav{ 
-position:fixed; 
-bottom:0;left:0;right:0; 
-max-width:430px;margin:0 auto; 
-background:rgba(15,23,42,0.95); 
-backdrop-filter:blur(25px); 
-display:flex;justify-content:space-around; 
-padding:16px 0; 
-border-top:1px solid rgba(255,255,255,0.08); 
-box-shadow:0 -10px 30px rgba(0,0,0,0.4); 
+/* ===== TELEGRAM DOCK (volume glass) ===== */ 
+ 
+.bottom-dock{ 
+  position:fixed; 
+  left:50%; 
+  transform:translateX(-50%); 
+  bottom:18px; 
+  width:92%; 
+  max-width:430px; 
+  height:76px; 
+  border-radius:38px; 
+ 
+  background:rgba(20,24,32,0.62); 
+  backdrop-filter:blur(30px); 
+ 
+  display:flex; 
+  justify-content:space-around; 
+  align-items:center; 
+ 
+  box-shadow: 
+    0 18px 50px rgba(0,0,0,0.55), 
+    inset 0 1px 0 rgba(255,255,255,0.10), 
+    inset 0 -1px 0 rgba(0,0,0,0.35); 
+ 
+  border:1px solid rgba(255,255,255,0.07); 
+  z-index:999; 
 } 
-.nav-item{ 
-font-size:12px; 
-opacity:0.5; 
-transition:0.3s; 
+ 
+.dock-item{ 
+  width:72px; 
+  height:60px; 
+  border-radius:22px; 
+ 
+  display:flex; 
+  flex-direction:column; 
+  align-items:center; 
+  justify-content:center; 
+ 
+  color:rgba(255,255,255,0.58); 
+  font-size:11px; 
+  gap:3px; 
+ 
+  transition: transform .35s cubic-bezier(.2,.8,.2,1),  
+              color .25s ease, 
+              background .25s ease; 
+  position:relative; 
+  user-select:none; 
+  -webkit-tap-highlight-color: transparent; 
 } 
-.nav-item.active{ 
-opacity:1; 
-color:#00ff9d; 
+ 
+.dock-item .dock-icon{ 
+  font-size:20px; 
+  line-height:20px; 
+  transition: transform .35s cubic-bezier(.2,.8,.2,1); 
+} 
+ 
+.dock-item.active{ 
+  color:#00ff9d; 
+  transform: translateY(-7px); 
+} 
+ 
+.dock-item.active::before{ 
+  content:""; 
+  position:absolute; 
+  inset:6px; 
+  border-radius:18px; 
+  background:rgba(0,255,157,0.10); 
+  box-shadow:0 0 26px rgba(0,255,157,0.38); 
+  z-index:-1; 
+} 
+ 
+.dock-item:active{ 
+  transform: translateY(-6px) scale(0.96); 
+} 
+.dock-item:active .dock-icon{ 
+  transform: scale(0.90); 
+} 
+ 
+/* ===== Screen animation base ===== */ 
+.app > div{ 
+  transition: opacity .30s ease, transform .30s ease; 
+  will-change: opacity, transform; 
 } 
 .calendar-day{ 
 display:inline-block; 
@@ -149,12 +211,31 @@ font-size:13px;
  
 </div> 
  
-<div class="bottom-nav"> 
-<div class="nav-item active" onclick="switchTab('home',this)">Главная</div> 
-<div class="nav-item" onclick="switchTab('finance',this)">Финансы</div> 
-<div class="nav-item" onclick="switchTab('objects',this)">Объекты</div> 
-<div class="nav-item" onclick="switchTab('calendar',this)">Календарь</div> 
-<div class="nav-item" onclick="switchTab('decisions',this)">Решения</div> 
+<div class="bottom-dock"> 
+  <div class="dock-item active" onclick="switchTab('home', this)"> 
+    <div class="dock-icon">👤</div> 
+    <div class="dock-label">Главная</div> 
+  </div> 
+ 
+  <div class="dock-item" onclick="switchTab('finance', this)"> 
+    <div class="dock-icon">💰</div> 
+    <div class="dock-label">Финансы</div> 
+  </div> 
+ 
+  <div class="dock-item" onclick="switchTab('objects', this)"> 
+    <div class="dock-icon">💬</div> 
+    <div class="dock-label">Объекты</div> 
+  </div> 
+ 
+  <div class="dock-item" onclick="switchTab('calendar', this)"> 
+    <div class="dock-icon">📅</div> 
+    <div class="dock-label">Календарь</div> 
+  </div> 
+ 
+  <div class="dock-item" onclick="switchTab('decisions', this)"> 
+    <div class="dock-icon">🧠</div> 
+    <div class="dock-label">Решения</div> 
+  </div> 
 </div> 
  
 <script> 
@@ -165,11 +246,58 @@ let objects = JSON.parse(localStorage.getItem("objects"))||[];
 let finances = JSON.parse(localStorage.getItem("finances"))||[]; 
 let decisions = JSON.parse(localStorage.getItem("decisions"))||[]; 
  
-function switchTab(id,el){ 
-document.querySelectorAll(".app > div").forEach(d=>d.classList.add("hidden")); 
-document.getElementById(id).classList.remove("hidden"); 
-document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active")); 
-el.classList.add("active"); 
+let __switching = false; 
+ 
+function switchTab(id, el){ 
+  if(__switching) return; 
+  __switching = true; 
+ 
+  // Active button 
+  document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active")); 
+  el.classList.add("active"); 
+ 
+  // Haptic (Telegram) 
+  try{ 
+    if(window.Telegram?.WebApp?.HapticFeedback){ 
+      Telegram.WebApp.HapticFeedback.impactOccurred("light"); 
+    } 
+  }catch(e){} 
+ 
+  // Screen animation 
+  const sections = document.querySelectorAll(".app > div"); 
+  const current = Array.from(sections).find(s => !s.classList.contains("hidden")); 
+  const next = document.getElementById(id); 
+ 
+  if(current === next){ 
+    __switching = false; 
+    return; 
+  } 
+ 
+  if(current){ 
+    current.style.opacity = "0"; 
+    current.style.transform = "translateY(14px)"; 
+    setTimeout(()=>{ 
+      current.classList.add("hidden"); 
+      current.style.opacity = ""; 
+      current.style.transform = ""; 
+    }, 170); 
+  } 
+ 
+  next.classList.remove("hidden"); 
+  next.style.opacity = "0"; 
+  next.style.transform = "translateY(14px)"; 
+ 
+  requestAnimationFrame(()=>{ 
+    requestAnimationFrame(()=>{ 
+      next.style.opacity = "1"; 
+      next.style.transform = "translateY(0)"; 
+      setTimeout(()=>{ 
+        next.style.opacity = ""; 
+        next.style.transform = ""; 
+        __switching = false; 
+      }, 220); 
+    }); 
+  }); 
 } 
  
 function addObject(){ 
