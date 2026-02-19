@@ -257,6 +257,163 @@ html, body{
   line-height:1.35; 
 } 
  
+ 
+/* ===== FINANCE v2 (plus + modal + lists) ===== */ 
+.screen-header{ 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  gap:12px; 
+  margin-bottom:12px; 
+} 
+.h-title{ 
+  font-size:26px; 
+  font-weight:900; 
+  letter-spacing:0.2px; 
+} 
+.icon-btn{ 
+  width:42px;height:42px; 
+  border-radius:14px; 
+  display:flex;align-items:center;justify-content:center; 
+  background:rgba(255,255,255,0.07); 
+  border:1px solid rgba(255,255,255,0.09); 
+  box-shadow:0 14px 40px rgba(0,0,0,0.35); 
+  backdrop-filter:blur(18px); 
+  -webkit-tap-highlight-color: transparent; 
+  user-select:none; 
+} 
+.icon-btn:active{transform:scale(0.96)} 
+.icon-plus{ 
+  font-size:22px; 
+  font-weight:900; 
+  line-height:1; 
+  color:rgba(255,255,255,0.92); 
+} 
+.fin-summary{ 
+  display:grid; 
+  grid-template-columns:1fr 1fr; 
+  gap:10px; 
+  margin-bottom:12px; 
+} 
+.fin-pill{ 
+  padding:14px; 
+  border-radius:20px; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.07); 
+} 
+.fin-pill .lbl{font-size:12px;color:rgba(255,255,255,0.55)} 
+.fin-pill .val{margin-top:6px;font-size:18px;font-weight:900} 
+.list-card{ 
+  padding:14px; 
+  border-radius:22px; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.07); 
+  margin-bottom:12px; 
+} 
+.list-title{ 
+  font-size:13px; 
+  color:rgba(255,255,255,0.62); 
+  margin-bottom:10px; 
+} 
+.list-row{ 
+  display:flex; 
+  justify-content:space-between; 
+  gap:10px; 
+  padding:10px 0; 
+  border-bottom:1px solid rgba(255,255,255,0.06); 
+} 
+.list-row:last-child{border-bottom:none} 
+.list-row .name{font-size:13px;color:rgba(255,255,255,0.9);max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} 
+.list-row .amt{font-size:13px;font-weight:900} 
+.muted{color:rgba(255,255,255,0.45)} 
+ 
+/* Modal (bottom sheet) */ 
+.modal-overlay{ 
+  position:fixed; inset:0; 
+  background:rgba(0,0,0,0.55); 
+  display:none; 
+  align-items:flex-end; 
+  justify-content:center; 
+  z-index:9999; 
+} 
+.modal-overlay.show{display:flex} 
+.sheet{ 
+  width:min(520px, 100%); 
+  border-top-left-radius:26px; 
+  border-top-right-radius:26px; 
+  padding:14px 14px 18px; 
+  background:rgba(18,22,32,0.92); 
+  border:1px solid rgba(255,255,255,0.08); 
+  backdrop-filter:blur(26px); 
+  box-shadow:0 -18px 60px rgba(0,0,0,0.55); 
+} 
+.sheet-top{ 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  gap:10px; 
+  margin-bottom:10px; 
+} 
+.sheet-title{font-size:14px;font-weight:900;color:rgba(255,255,255,0.9)} 
+.sheet-close{ 
+  width:36px;height:36px;border-radius:12px; 
+  display:flex;align-items:center;justify-content:center; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.08); 
+} 
+.sheet-close:active{transform:scale(0.96)} 
+.segment{ 
+  display:flex; 
+  gap:8px; 
+  background:rgba(255,255,255,0.05); 
+  border:1px solid rgba(255,255,255,0.06); 
+  border-radius:18px; 
+  padding:6px; 
+  margin-bottom:12px; 
+} 
+.seg-btn{ 
+  flex:1; 
+  padding:10px 10px; 
+  border-radius:14px; 
+  text-align:center; 
+  font-size:12px; 
+  color:rgba(255,255,255,0.72); 
+  user-select:none; 
+} 
+.seg-btn.active{ 
+  background:rgba(255,255,255,0.10); 
+  border:1px solid rgba(255,255,255,0.10); 
+  color:rgba(255,255,255,0.95); 
+  box-shadow:0 10px 24px rgba(0,0,0,0.35); 
+} 
+.form-grid{display:grid; gap:10px; margin-bottom:12px} 
+.inp{ 
+  width:100%; 
+  padding:14px 14px; 
+  border-radius:18px; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.08); 
+  color:#fff; 
+  outline:none; 
+} 
+.inp::placeholder{color:rgba(255,255,255,0.35)} 
+.sheet-actions{display:flex; gap:10px; align-items:center} 
+.btn-primary{ 
+  flex:1; 
+  padding:14px 14px; 
+  border-radius:18px; 
+  background:rgba(0,255,157,0.16); 
+  border:1px solid rgba(0,255,157,0.22); 
+  color:rgba(255,255,255,0.95); 
+  font-weight:900; 
+  text-align:center; 
+  user-select:none; 
+} 
+.btn-primary.disabled{ 
+  opacity:0.45; 
+  filter:grayscale(0.2); 
+} 
+ 
 </style>  
 </head>  
 <body>  
@@ -315,16 +472,61 @@ html, body{
  
 </div> 
  
-<div id="finance" class="screen">  
-<h1>Финансы</h1>  
-<div class="card">  
-<select id="objectSelect"></select>  
-<input type="number" id="incomeInput" placeholder="Доход">  
-<input type="number" id="expenseInput" placeholder="Расход">  
-<button onclick="saveFinance()">Сохранить</button>  
-</div>  
-<div id="financeList"></div>  
-</div>  
+<div id="finance" class="screen"> 
+ 
+  <div class="screen-header"> 
+    <div class="h-title">Финансы</div> 
+    <div class="icon-btn" id="finAddBtn" title="Добавить"> 
+      <div class="icon-plus">+</div> 
+    </div> 
+  </div> 
+ 
+  <div class="fin-summary"> 
+    <div class="fin-pill"> 
+      <div class="lbl">Доход</div> 
+      <div class="val green" id="sumIncome">₽ 0</div> 
+    </div> 
+    <div class="fin-pill"> 
+      <div class="lbl">Расход</div> 
+      <div class="val red" id="sumExpense">₽ 0</div> 
+    </div> 
+  </div> 
+ 
+  <div class="list-card"> 
+    <div class="list-title">Доходы — от кого поступления</div> 
+    <div id="incomeList" class="muted">Пока пусто</div> 
+  </div> 
+ 
+  <div class="list-card"> 
+    <div class="list-title">Расходы — кому отправлял</div> 
+    <div id="expenseList" class="muted">Пока пусто</div> 
+  </div> 
+ 
+</div> 
+ 
+<!-- Finance modal --> 
+<div class="modal-overlay" id="finModal"> 
+  <div class="sheet"> 
+    <div class="sheet-top"> 
+      <div class="sheet-title" id="finModalTitle">Добавить операцию</div> 
+      <div class="sheet-close" id="finCloseBtn">✕</div> 
+    </div> 
+ 
+    <div class="segment"> 
+      <div class="seg-btn active" id="segIncome">Доход</div> 
+      <div class="seg-btn" id="segExpense">Расход</div> 
+    </div> 
+ 
+    <div class="form-grid" id="finForm"> 
+      <!-- dynamic fields --> 
+    </div> 
+ 
+    <div class="sheet-actions"> 
+      <div class="btn-primary disabled" id="finDoneBtn">Готово</div> 
+    </div> 
+  </div> 
+</div> 
+ 
 <div id="objects" class="screen">  
 <h1>Объекты</h1>  
 <div class="card">  
@@ -376,6 +578,47 @@ tg.expand(); tg.ready();
 let objects = JSON.parse(localStorage.getItem("objects"))||[];  
 let finances = JSON.parse(localStorage.getItem("finances"))||[];  
 let decisions = JSON.parse(localStorage.getItem("decisions"))||[];  
+ 
+// ===== Finance Entries v2 ===== 
+let financeEntries = JSON.parse(localStorage.getItem("fed_fin_entries") || "[]"); 
+ 
+// migrate old format (if exists) 
+(function migrateOldFinances(){ 
+  try{ 
+    const old = JSON.parse(localStorage.getItem("finances") || "null"); 
+    if(Array.isArray(old) && old.length && financeEntries.length === 0){ 
+      old.forEach(x=>{ 
+        const inc = Number(x.income||0); 
+        const exp = Number(x.expense||0); 
+        const ts = x.ts || Date.now(); 
+        if(inc>0){ 
+          financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"income", counterparty:(x.from||x.object||"Не указано"), note:"", amount:inc, ts}); 
+        } 
+        if(exp>0){ 
+          financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"expense", counterparty:(x.to||x.object||"Не указано"), note:"", amount:exp, ts}); 
+        } 
+      }); 
+      localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
+    } 
+  }catch(e){} 
+})(); 
+ 
+function saveFinanceEntries(){ 
+  localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
+} 
+ 
+function fmtRub(n){ 
+  return "₽ " + Math.round(Number(n)||0).toLocaleString("ru-RU"); 
+} 
+ 
+function escapeHtml(str){ 
+  return String(str||"") 
+    .replaceAll("&","&amp;") 
+    .replaceAll("<","&lt;") 
+    .replaceAll(">","&gt;") 
+    .replaceAll('"',"&quot;") 
+    .replaceAll("'","&#039;"); 
+} 
 let __switching = false;  
 function switchTab(id, el){ 
   // активная кнопка в доке 
@@ -437,9 +680,154 @@ function openQuick(type){
   } 
 } 
  
+ 
+// ===== Finance Modal Logic ===== 
+let finMode = "income"; 
+const finModal = document.getElementById("finModal"); 
+const finAddBtn = document.getElementById("finAddBtn"); 
+const finCloseBtn = document.getElementById("finCloseBtn"); 
+const segIncome = document.getElementById("segIncome"); 
+const segExpense = document.getElementById("segExpense"); 
+const finForm = document.getElementById("finForm"); 
+const finDoneBtn = document.getElementById("finDoneBtn"); 
+ 
+function openFinModal(){ 
+  if(!finModal) return; 
+  finModal.classList.add("show"); 
+  setFinMode("income"); 
+  buildFinForm(); 
+  validateFinForm(); 
+} 
+function closeFinModal(){ 
+  finModal?.classList.remove("show"); 
+} 
+function setFinMode(mode){ 
+  finMode = mode; 
+  segIncome?.classList.toggle("active", mode==="income"); 
+  segExpense?.classList.toggle("active", mode==="expense"); 
+  buildFinForm(); 
+  validateFinForm(); 
+} 
+function nowLocalString(){ 
+  try{ 
+    return new Date().toLocaleString("ru-RU", {hour12:false}); 
+  }catch(e){ return new Date().toString(); } 
+} 
+function buildFinForm(){ 
+  if(!finForm) return; 
+  const dt = nowLocalString(); 
+  if(finMode==="income"){ 
+    finForm.innerHTML = ` 
+      <input class="inp" id="fFrom" placeholder="От кого поступления" /> 
+      <input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
+      <input class="inp" id="fDT" value="${dt}" disabled /> 
+    `; 
+  }else{ 
+    finForm.innerHTML = ` 
+      <input class="inp" id="fTo" placeholder="Кому" /> 
+      <input class="inp" id="fWhat" placeholder="За что" /> 
+      <input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
+      <input class="inp" id="fDT" value="${dt}" disabled /> 
+    `; 
+  } 
+  // bind validation 
+  finForm.querySelectorAll("input").forEach(i=>{ 
+    i.addEventListener("input", validateFinForm); 
+  }); 
+} 
+function validateFinForm(){ 
+  if(!finDoneBtn) return false; 
+  let ok = false; 
+  const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
+  if(finMode==="income"){ 
+    const from = (document.getElementById("fFrom")?.value || "").trim(); 
+    ok = from.length>0 && amount>0; 
+  }else{ 
+    const to = (document.getElementById("fTo")?.value || "").trim(); 
+    const what = (document.getElementById("fWhat")?.value || "").trim(); 
+    ok = to.length>0 && what.length>0 && amount>0; 
+  } 
+  finDoneBtn.classList.toggle("disabled", !ok); 
+  return ok; 
+} 
+function submitFinForm(){ 
+  if(!validateFinForm()) return; 
+  const ts = Date.now(); 
+  const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
+  if(finMode==="income"){ 
+    const from = (document.getElementById("fFrom")?.value || "").trim(); 
+    financeEntries.unshift({ 
+      id: crypto?.randomUUID?.() || String(Math.random()), 
+      type:"income", 
+      counterparty: from, 
+      note:"", 
+      amount, 
+      ts 
+    }); 
+  }else{ 
+    const to = (document.getElementById("fTo")?.value || "").trim(); 
+    const what = (document.getElementById("fWhat")?.value || "").trim(); 
+    financeEntries.unshift({ 
+      id: crypto?.randomUUID?.() || String(Math.random()), 
+      type:"expense", 
+      counterparty: to, 
+      note: what, 
+      amount, 
+      ts 
+    }); 
+  } 
+  saveFinanceEntries(); 
+  closeFinModal(); 
+  renderFinance(); 
+} 
+ 
+finAddBtn?.addEventListener("click", openFinModal); 
+finCloseBtn?.addEventListener("click", closeFinModal); 
+finModal?.addEventListener("click", (e)=>{ if(e.target===finModal) closeFinModal(); }); 
+segIncome?.addEventListener("click", ()=>setFinMode("income")); 
+segExpense?.addEventListener("click", ()=>setFinMode("expense")); 
+finDoneBtn?.addEventListener("click", submitFinForm); 
+ 
 renderObjects(); updateSelect(); recalcHome();  
 document.getElementById("objectInput").value="";  
 }  
+function renderFinance(){ 
+  const sumIncome = document.getElementById("sumIncome"); 
+  const sumExpense = document.getElementById("sumExpense"); 
+  const incomeList = document.getElementById("incomeList"); 
+  const expenseList = document.getElementById("expenseList"); 
+ 
+  const incomeTotal = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+  const expenseTotal = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+  if(sumIncome) sumIncome.textContent = fmtRub(incomeTotal); 
+  if(sumExpense) sumExpense.textContent = fmtRub(expenseTotal); 
+ 
+  const groupBy = (arr)=>{ 
+    const m = new Map(); 
+    arr.forEach(e=>{ 
+      const key = (e.counterparty||"Не указано").trim(); 
+      m.set(key, (m.get(key)||0) + (Number(e.amount)||0)); 
+    }); 
+    return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]); 
+  }; 
+ 
+  const makeRows = (pairs, colorClass)=>{ 
+    if(!pairs.length) return '<div class="muted">Пока пусто</div>'; 
+    return pairs.slice(0,30).map(([name,sum])=>` 
+      <div class="list-row"> 
+        <div class="name">${escapeHtml(name)}</div> 
+        <div class="amt ${colorClass}">${fmtRub(sum)}</div> 
+      </div> 
+    `).join(""); 
+  }; 
+ 
+  if(incomeList) incomeList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="income")), "green"); 
+  if(expenseList) expenseList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="expense")), "red"); 
+ 
+  // refresh home chart + KPIs 
+  recalcHome(); 
+} 
+function renderObjects 
 function renderObjects(){  
 let list=document.getElementById("objectList");  
 list.innerHTML="";  
@@ -482,8 +870,8 @@ if(!canvas) return;
 const ctx=canvas.getContext("2d");  
 canvas.width=350; canvas.height=200;  
  
-let totalIncome=finances.reduce((a,b)=>a+(Number(b.income)||0),0);  
-let totalExpense=finances.reduce((a,b)=>a+(Number(b.expense)||0),0);  
+let totalIncome = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+let totalExpense = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
 let profit=totalIncome-totalExpense; 
  
 let percent=(totalExpense/(totalIncome||1))*180;  
