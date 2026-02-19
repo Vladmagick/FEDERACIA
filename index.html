@@ -1266,7 +1266,211 @@ html, body{
 
 </div>  
 
-<script>  
+// ===== Calendar v2 (FEDERACIA) — NO CONFLICT with old renderCalendar() =====
+const CAL_STORAGE_MARKS = "calendarMarks";   // { "YYYY-MM-DD": true }
+const CAL_STORAGE_NOTES = "calendarNotes";   // { "YYYY-MM-DD": "text" }
+
+function safeJson(str, fallback){
+  try{ return str ? JSON.parse(str) : fallback; } catch(e){ return fallback; }
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function monthNameRu(m){
+  const names = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+  return names[m] || "";
+}
+function normalizeYM(y, m){
+  const d = new Date(y, m, 1);
+  return { y: d.getFullYear(), m: d.getMonth() };
+}
+function dateKey(y,m,day){ return `${y}-${pad2(m+1)}-${pad2(day)}`; }
+
+// view
+let calView = (function(){
+  const d = new Date();
+  return { y: d.getFullYear(), m: d.getMonth() }; // 0..11
+})();
+
+let calMarks = safeJson(localStorage.getItem(CAL_STORAGE_MARKS), {});
+let calNotes = safeJson(localStorage.getItem(CAL_STORAGE_NOTES), {});
+
+let calPressTimer = null;
+let calPressedKey = null;
+
+function makeDayCellFed(y, m, day, muted){
+  const nm = normalizeYM(y,m);
+  const key = dateKey(nm.y, nm.m, day);
+
+  const el = document.createElement("div");
+  el.className = "cal-day" + (muted ? " muted" : "");
+  el.textContent = String(day);
+  el.dataset.key = key;
+
+  if(calMarks[key]) el.classList.add("done");
+  if(calNotes[key] && String(calNotes[key]).trim()) el.classList.add("has-note");
+
+  // tap + long-press
+  el.addEventListener("touchstart", ()=> startPressFed(key), {passive:true});
+  el.addEventListener("touchend", endPressFed, {passive:true});
+  el.addEventListener("touchcancel", cancelPressFed, {passive:true});
+
+  el.addEventListener("mousedown", ()=> startPressFed(key));
+  el.addEventListener("mouseup", endPressFed);
+  el.addEventListener("mouseleave", cancelPressFed);
+
+  return el;
+}
+
+function startPressFed(key){
+  cancelPressFed();
+  calPressedKey = key;
+
+  calPressTimer = setTimeout(()=>{
+    openCalNoteFed(key); // long press
+    calPressTimer = null;
+  }, 450);
+}
+
+function endPressFed(){
+  if(calPressTimer){
+    clearTimeout(calPressTimer);
+    calPressTimer = null;
+    toggleCalDoneFed(calPressedKey); // tap
+  }
+  calPressedKey = null;
+}
+
+function cancelPressFed(){
+  if(calPressTimer){
+    clearTimeout(calPressTimer);
+    calPressTimer = null;
+  }
+  calPressedKey = null;
+}
+
+function toggleCalDoneFed(key){
+  if(!key) return;
+  calMarks[key] = !calMarks[key];
+  localStorage.setItem(CAL_STORAGE_MARKS, JSON.stringify(calMarks));
+  renderFedCalendar();
+}
+
+function openCalNoteFed(key){
+  const modal = document.getElementById("calNoteModal");
+  const title = document.getElementById("calNoteTitle");
+  const text = document.getElementById("calNoteText");
+  if(!modal || !title || !text) return;
+
+  title.textContent = `Заметка • ${key}`;
+  text.value = calNotes[key] || "";
+  modal.dataset.key = key;
+
+  modal.classList.remove("hidden");
+}
+
+function closeCalNoteFed(){
+  const modal = document.getElementById("calNoteModal");
+  if(!modal) return;
+  modal.classList.add("hidden");
+  modal.dataset.key = "";
+}
+
+function bindFedCalendarUI(){
+  const prev = document.getElementById("calPrev");
+  const next = document.getElementById("calNext");
+
+  if(prev) prev.addEventListener("click", ()=>{
+    const d = new Date(calView.y, calView.m - 1, 1);
+    calView.y = d.getFullYear(); calView.m = d.getMonth();
+    renderFedCalendar();
+  });
+
+  if(next) next.addEventListener("click", ()=>{
+    const d = new Date(calView.y, calView.m + 1, 1);
+    calView.y = d.getFullYear(); calView.m = d.getMonth();
+    renderFedCalendar();
+  });
+
+  const modal = document.getElementById("calNoteModal");
+  const close = document.getElementById("calNoteClose");
+  const save = document.getElementById("calNoteSave");
+  const del = document.getElementById("calNoteDelete");
+
+  if(close) close.addEventListener("click", closeCalNoteFed);
+
+  if(modal){
+    modal.addEventListener("click",(e)=>{
+      if(e.target && e.target.dataset && e.target.dataset.close === "1") closeCalNoteFed();
+    });
+  }
+
+  if(save) save.addEventListener("click", ()=>{
+    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
+    const text = document.getElementById("calNoteText");
+    if(!key || !text) return;
+
+    const val = String(text.value || "").trim();
+    if(val){ calNotes[key] = val; }
+    else { delete calNotes[key]; }
+
+    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
+    closeCalNoteFed();
+    renderFedCalendar();
+  });
+
+  if(del) del.addEventListener("click", ()=>{
+    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
+    if(!key) return;
+    delete calNotes[key];
+    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
+    closeCalNoteFed();
+    renderFedCalendar();
+  });
+}
+
+function renderFedCalendar(){
+  const grid = document.getElementById("calGrid");
+  const ml = document.getElementById("calMonthLabel");
+  const yl = document.getElementById("calYearLabel");
+  if(!grid || !ml || !yl) return;
+
+  ml.textContent = monthNameRu(calView.m);
+  yl.textContent = String(calView.y);
+
+  grid.innerHTML = "";
+
+  const first = new Date(calView.y, calView.m, 1);
+  const last = new Date(calView.y, calView.m + 1, 0);
+  const daysInMonth = last.getDate();
+
+  // Пн=0..Вс=6
+  const jsDow = first.getDay();           // Вс=0..Сб=6
+  const startOffset = (jsDow + 6) % 7;    // переводим: Пн=0
+
+  // добивка предыдущих
+  const prevLast = new Date(calView.y, calView.m, 0).getDate();
+  for(let i=0; i<startOffset; i++){
+    const day = prevLast - (startOffset - 1 - i);
+    grid.appendChild(makeDayCellFed(calView.y, calView.m - 1, day, true));
+  }
+
+  // текущий месяц
+  for(let day=1; day<=daysInMonth; day++){
+    grid.appendChild(makeDayCellFed(calView.y, calView.m, day, false));
+  }
+
+  // добивка следующего
+  const total = startOffset + daysInMonth;
+  const tail = (7 - (total % 7)) % 7;
+  for(let day=1; day<=tail; day++){
+    grid.appendChild(makeDayCellFed(calView.y, calView.m + 1, day, true));
+  }
+}
+
+// init once
+document.addEventListener("DOMContentLoaded", ()=>{
+  bindFedCalendarUI();
+  renderFedCalendar();
+});<script>  
 
 const tg = window.Telegram.WebApp;  
 
@@ -1593,7 +1797,8 @@ function switchTab(id, el){
 
   // сброс скролла только внутри экрана 
 
-  next.scrollTop = 0; 
+  next.scrollTop = 0;  if(id === "calendar") renderFedCalendar();
+
 
  
 
