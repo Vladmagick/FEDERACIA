@@ -15,28 +15,6 @@ color:#fff;
 min-height:100vh;  
 overflow-x:hidden;  
 }  
- 
-html, body{ 
-  height:100%; 
-  overflow:hidden; /* фикс прыжков iOS/WebView */ 
-  overscroll-behavior:none; 
-} 
- 
-.app{ 
-  height:100dvh; /* стабильная высота в iOS */ 
-  overflow-y:auto; 
-  -webkit-overflow-scrolling:touch; 
-  overscroll-behavior:none; 
-  padding-bottom:calc(140px + env(safe-area-inset-bottom)); 
-} 
- 
-.bottom-dock{ 
-  bottom:calc(18px + env(safe-area-inset-bottom)); 
-} 
- 
-.dock-item{ 
-  touch-action:manipulation; 
-} 
 .app{  
 max-width:430px;  
 margin:0 auto;  
@@ -157,11 +135,52 @@ background:rgba(255,255,255,0.06);
 font-size:13px;  
 }  
 .calendar-day.marked{background:#00ff9d;color:#000}  
+ 
+/* ===== STATIC SCREENS MODE (NO JUMP) ===== */ 
+html, body{ 
+  height:100%; 
+  overflow:hidden;              /* убираем прыжки iOS/WebView */ 
+  overscroll-behavior:none; 
+} 
+ 
+.app{ 
+  position:relative; 
+  height:100dvh;                /* стабильная высота */ 
+  overflow:hidden;              /* скролл только внутри экранов */ 
+  max-width:430px; 
+  margin:0 auto; 
+  padding:0;                    /* padding переедет в .screen */ 
+} 
+ 
+/* Каждый экран — отдельная "страница" */ 
+.screen{ 
+  position:absolute; 
+  inset:0; 
+  padding:20px 16px; 
+  padding-bottom:calc(130px + env(safe-area-inset-bottom)); 
+  overflow-y:auto; 
+  -webkit-overflow-scrolling:touch; 
+  display:none; 
+} 
+ 
+.screen.active{ 
+  display:block; 
+} 
+ 
+/* док учитывает safe-area */ 
+.bottom-dock{ 
+  bottom:calc(18px + env(safe-area-inset-bottom)); 
+} 
+ 
+.dock-item{ 
+  touch-action:manipulation; 
+} 
+ 
 </style>  
 </head>  
 <body>  
 <div class="app">  
-<div id="home">  
+<div id="home" class="screen active">  
 <h1>ФЕДЕРАЦИЯ</h1>  
 <div class="card">  
 <div>Финансы месяца</div>  
@@ -169,7 +188,7 @@ font-size:13px;
 <div id="financeSummary"></div>  
 </div>  
 </div>  
-<div id="finance" class="hidden">  
+<div id="finance" class="screen">  
 <h1>Финансы</h1>  
 <div class="card">  
 <select id="objectSelect"></select>  
@@ -179,7 +198,7 @@ font-size:13px;
 </div>  
 <div id="financeList"></div>  
 </div>  
-<div id="objects" class="hidden">  
+<div id="objects" class="screen">  
 <h1>Объекты</h1>  
 <div class="card">  
 <textarea id="objectInput" placeholder="Новый объект"></textarea>  
@@ -187,13 +206,13 @@ font-size:13px;
 </div>  
 <div id="objectList"></div>  
 </div>  
-<div id="calendar" class="hidden">  
+<div id="calendar" class="screen">  
 <h1>Календарь</h1>  
 <div class="card">  
 <div id="calendarGrid"></div>  
 </div>  
 </div>  
-<div id="decisions" class="hidden">  
+<div id="decisions" class="screen">  
 <h1>Решения</h1>  
 <div class="card">  
 <textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea>  
@@ -221,62 +240,39 @@ font-size:13px;
 </div>  
 <div class="dock-item" onclick="switchTab('decisions', this)">  
 <div class="dock-icon">🧠</div>  
-<div class="dock-label">меню</div>  
+<div class="dock-label">Решения</div>  
 </div>  
 </div>  
 <script>  
 const tg = window.Telegram.WebApp;  
 tg.expand(); tg.ready();  
-try{ tg.disableVerticalSwipes(); }catch(e){} 
 let objects = JSON.parse(localStorage.getItem("objects"))||[];  
 let finances = JSON.parse(localStorage.getItem("finances"))||[];  
 let decisions = JSON.parse(localStorage.getItem("decisions"))||[];  
 let __switching = false;  
-function switchTab(id, el){  
-document.querySelector(".app").scrollTop = 0; 
-if(__switching) return;  
-__switching = true;  
-// Active button  
-document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active"));  
-el.classList.add("active");  
-// Haptic (Telegram)  
-try{  
-if(window.Telegram?.WebApp?.HapticFeedback){  
-Telegram.WebApp.HapticFeedback.impactOccurred("light");  
-}  
-}catch(e){}  
-// Screen animation  
-const sections = document.querySelectorAll(".app > div");  
-const current = Array.from(sections).find(s => !s.classList.contains("hidden"));  
-const next = document.getElementById(id);  
-if(current === next){  
-__switching = false;  
-return;  
-}  
-if(current){  
-current.style.opacity = "0";  
-current.style.transform = "translateY(14px)";  
-setTimeout(()=>{  
-current.classList.add("hidden");  
-current.style.opacity = "";  
-current.style.transform = "";  
-}, 170);  
-}  
-next.classList.remove("hidden");  
-next.style.opacity = "0";  
-next.style.transform = "translateY(14px)";  
-requestAnimationFrame(()=>{  
-requestAnimationFrame(()=>{  
-next.style.opacity = "1";  
-next.style.transform = "translateY(0)";  
-setTimeout(()=>{  
-next.style.opacity = "";  
-next.style.transform = "";  
-__switching = false;  
-}, 220);  
-});  
-});  
-}  
+function switchTab(id, el){ 
+  // активная кнопка в доке 
+  document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active")); 
+  el.classList.add("active"); 
+ 
+  // анти-bounce в Telegram (если поддерживается) 
+  try{ tg.disableVerticalSwipes?.(); }catch(e){} 
+ 
+  // переключение экранов (СТАТИЧНО, без анимаций) 
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); 
+  const next = document.getElementById(id); 
+  next.classList.add("active"); 
+ 
+  // сброс скролла только внутри экрана 
+  next.scrollTop = 0; 
+ 
+  // haptic (Telegram) 
+  try{ 
+    if(window.Telegram?.WebApp?.HapticFeedback){ 
+      Telegram.WebApp.HapticFeedback.impactOccurred("light"); 
+    } 
+  }catch(e){} 
+} 
 function addObject(){  
 let text=document.getElementById("objectInput").value;  
 if(!text)return;  
