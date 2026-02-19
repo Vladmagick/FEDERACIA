@@ -324,14 +324,7 @@ function switchTab(id, el){
   requestAnimationFrame(()=>{ 
     requestAnimationFrame(()=>{ 
       next.style.opacity = "1"; 
-      next.style.transform = "translateY(0)"; next.animate(
-  [
-    { transform: "translateY(14px) scale(0.985)", opacity: 0 },
-    { transform: "translateY(0) scale(1.01)", opacity: 1, offset: 0.75 },
-    { transform: "translateY(0) scale(1)", opacity: 1 }
-  ],
-  { duration: 360, easing: "cubic-bezier(.2,.9,.2,1)" }
-);
+      next.style.transform = "translateY(0)"; 
       setTimeout(()=>{ 
         next.style.opacity = ""; 
         next.style.transform = ""; 
