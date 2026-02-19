@@ -11,177 +11,140 @@
 <style> 
 *{margin:0;padding:0;box-sizing:border-box} 
 body{ 
-    font-family:'Inter',sans-serif; 
-    background:linear-gradient(180deg,#0f172a,#0e1117); 
-    color:#fff; 
-    min-height:100vh; 
-    overflow-x:hidden; 
+font-family:'Inter',sans-serif; 
+background:linear-gradient(180deg,#0b0f17,#0f172a); 
+color:#fff; 
+min-height:100vh; 
+overflow-x:hidden; 
 } 
 .app{ 
-    max-width:430px; 
-    margin:0 auto; 
-    padding:20px 16px 100px; 
+max-width:430px; 
+margin:0 auto; 
+padding:20px 16px 110px; 
 } 
-h1{ 
-    font-size:22px; 
-    font-weight:600; 
-    margin-bottom:20px; 
-} 
+h1{font-size:22px;font-weight:600;margin-bottom:16px} 
+ 
 .card{ 
-    background:rgba(255,255,255,0.05); 
-    backdrop-filter:blur(25px); 
-    border-radius:22px; 
-    padding:18px; 
-    margin-bottom:16px; 
-    box-shadow:0 15px 40px rgba(0,0,0,0.4); 
-    transition:0.25s; 
+background:rgba(255,255,255,0.06); 
+backdrop-filter:blur(25px); 
+border-radius:24px; 
+padding:18px; 
+margin-bottom:16px; 
+box-shadow:0 15px 40px rgba(0,0,0,0.5); 
+transition:0.25s ease; 
 } 
 .card:active{transform:scale(0.97)} 
-.section-title{font-size:13px;opacity:0.7;margin-bottom:8px} 
-.balance{font-size:26px;font-weight:700;margin-top:5px} 
  
-canvas{width:100%;height:180px} 
- 
-.status-row{ 
-    display:flex; 
-    justify-content:space-between; 
-    font-size:13px; 
-    margin-top:10px; 
+input,textarea,select{ 
+width:100%; 
+margin-top:10px; 
+padding:12px; 
+border-radius:16px; 
+border:none; 
+background:rgba(255,255,255,0.08); 
+color:#fff; 
 } 
+ 
+button{ 
+margin-top:12px; 
+padding:12px; 
+border-radius:18px; 
+border:none; 
+background:rgba(255,255,255,0.1); 
+color:#fff; 
+transition:0.2s; 
+} 
+button:active{transform:scale(0.96)} 
+ 
+canvas{width:100%;height:200px;cursor:pointer} 
+ 
 .green{color:#00ff9d} 
 .orange{color:#ff9d00} 
 .red{color:#ff4d4d} 
  
-button{ 
-    background:rgba(255,255,255,0.08); 
-    border:none; 
-    border-radius:18px; 
-    padding:12px; 
-    color:#fff; 
-    width:100%; 
-    margin-top:12px; 
-    transition:0.2s; 
-} 
-button:active{transform:scale(0.96)} 
- 
 .hidden{display:none} 
  
+/* Bottom Nav */ 
 .bottom-nav{ 
-    position:fixed; 
-    bottom:0; 
-    left:0; 
-    right:0; 
-    max-width:430px; 
-    margin:0 auto; 
-    background:rgba(15,23,42,0.95); 
-    backdrop-filter:blur(20px); 
-    display:flex; 
-    justify-content:space-around; 
-    padding:14px 0; 
-    border-top:1px solid rgba(255,255,255,0.05); 
+position:fixed; 
+bottom:0;left:0;right:0; 
+max-width:430px;margin:0 auto; 
+background:rgba(15,23,42,0.95); 
+backdrop-filter:blur(25px); 
+display:flex;justify-content:space-around; 
+padding:16px 0; 
+border-top:1px solid rgba(255,255,255,0.08); 
+box-shadow:0 -10px 30px rgba(0,0,0,0.4); 
 } 
 .nav-item{ 
-    text-align:center; 
-    font-size:11px; 
-    opacity:0.6; 
-    transition:0.3s; 
+font-size:12px; 
+opacity:0.5; 
+transition:0.3s; 
 } 
 .nav-item.active{ 
-    opacity:1; 
-    color:#00ff9d; 
+opacity:1; 
+color:#00ff9d; 
 } 
- 
-.roadmap{ 
-    display:flex; 
-    overflow-x:auto; 
-    gap:12px; 
+.calendar-day{ 
+display:inline-block; 
+width:42px;height:42px; 
+line-height:42px; 
+text-align:center; 
+margin:4px; 
+border-radius:12px; 
+background:rgba(255,255,255,0.06); 
+font-size:13px; 
 } 
-.stage{ 
-    min-width:160px; 
-    background:rgba(255,255,255,0.06); 
-    padding:14px; 
-    border-radius:18px; 
-    font-size:12px; 
-} 
- 
-input,textarea{ 
-    width:100%; 
-    margin-top:8px; 
-    padding:10px; 
-    border-radius:12px; 
-    border:none; 
-    background:rgba(255,255,255,0.06); 
-    color:#fff; 
-} 
-textarea{resize:none;height:80px} 
+.calendar-day.marked{background:#00ff9d;color:#000} 
 </style> 
 </head> 
  
 <body> 
 <div class="app"> 
  
-<!-- ГЛАВНАЯ --> 
 <div id="home"> 
 <h1>ФЕДЕРАЦИЯ</h1> 
- 
 <div class="card"> 
-<div class="section-title">Финансы — этот месяц</div> 
-<canvas id="financeChart"></canvas> 
-<div class="status-row"> 
-<span class="green">Доход</span> 
-<span class="red">Расход</span> 
-<span class="orange">Прибыль</span> 
+<div>Финансы месяца</div> 
+<canvas id="chart"></canvas> 
+<div id="financeSummary"></div> 
 </div> 
 </div> 
  
-<div class="card"> 
-<div class="section-title">Краткая сводка</div> 
-<div>Объекты в работе: <span class="orange">3</span></div> 
-<div>Завершено: <span class="green">5</span></div> 
-<div>Задержки: <span class="red">1</span></div> 
-</div> 
-</div> 
- 
-<!-- ФИНАНСЫ --> 
 <div id="finance" class="hidden"> 
 <h1>Финансы</h1> 
 <div class="card"> 
-<input type="number" id="income" placeholder="Доход"> 
-<input type="number" id="expense" placeholder="Расход"> 
+<select id="objectSelect"></select> 
+<input type="number" id="incomeInput" placeholder="Доход"> 
+<input type="number" id="expenseInput" placeholder="Расход"> 
 <button onclick="saveFinance()">Сохранить</button> 
 </div> 
+<div id="financeList"></div> 
 </div> 
  
-<!-- ОБЪЕКТЫ --> 
 <div id="objects" class="hidden"> 
 <h1>Объекты</h1> 
 <div class="card"> 
-<textarea id="objectText" placeholder="Добавить объект..."></textarea> 
+<textarea id="objectInput" placeholder="Новый объект"></textarea> 
 <button onclick="addObject()">Добавить</button> 
 </div> 
 <div id="objectList"></div> 
 </div> 
  
-<!-- ROADMAP --> 
-<div id="roadmap" class="hidden"> 
-<h1>Дорожная карта</h1> 
-<div class="roadmap"> 
-<div class="stage">Выход на объект</div> 
-<div class="stage">Переговоры</div> 
-<div class="stage">Согласование</div> 
-<div class="stage">Договор подписан</div> 
-<div class="stage">Начало работ</div> 
-<div class="stage">КС-2 / КС-3</div> 
-<div class="stage">Сдача объекта</div> 
+<div id="calendar" class="hidden"> 
+<h1>Календарь</h1> 
+<div class="card"> 
+<div id="calendarGrid"></div> 
 </div> 
 </div> 
  
-<!-- ПРОФИЛЬ --> 
-<div id="profile" class="hidden"> 
-<h1>Профиль</h1> 
+<div id="decisions" class="hidden"> 
+<h1>Решения</h1> 
 <div class="card"> 
-<div id="userInfo">Загрузка...</div> 
+<textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea> 
+<button onclick="addDecision()">Сохранить</button> 
 </div> 
+<div id="decisionList"></div> 
 </div> 
  
 </div> 
@@ -190,23 +153,18 @@ textarea{resize:none;height:80px}
 <div class="nav-item active" onclick="switchTab('home',this)">Главная</div> 
 <div class="nav-item" onclick="switchTab('finance',this)">Финансы</div> 
 <div class="nav-item" onclick="switchTab('objects',this)">Объекты</div> 
-<div class="nav-item" onclick="switchTab('roadmap',this)">Roadmap</div> 
-<div class="nav-item" onclick="switchTab('profile',this)">Профиль</div> 
+<div class="nav-item" onclick="switchTab('calendar',this)">Календарь</div> 
+<div class="nav-item" onclick="switchTab('decisions',this)">Решения</div> 
 </div> 
  
 <script> 
-// Telegram Init 
 const tg = window.Telegram.WebApp; 
-tg.expand(); 
-tg.ready(); 
+tg.expand(); tg.ready(); 
  
-const user = tg.initDataUnsafe?.user; 
-if(user){ 
-document.getElementById("userInfo").innerHTML = 
-"ID: "+user.id+"<br>"+user.first_name; 
-} 
+let objects = JSON.parse(localStorage.getItem("objects"))||[]; 
+let finances = JSON.parse(localStorage.getItem("finances"))||[]; 
+let decisions = JSON.parse(localStorage.getItem("decisions"))||[]; 
  
-// Navigation 
 function switchTab(id,el){ 
 document.querySelectorAll(".app > div").forEach(d=>d.classList.add("hidden")); 
 document.getElementById(id).classList.remove("hidden"); 
@@ -214,53 +172,113 @@ document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
 el.classList.add("active"); 
 } 
  
-// Finance Storage 
-function saveFinance(){ 
-localStorage.setItem("income",document.getElementById("income").value); 
-localStorage.setItem("expense",document.getElementById("expense").value); 
-drawChart(); 
+function addObject(){ 
+let text=document.getElementById("objectInput").value; 
+if(!text)return; 
+objects.push(text); 
+localStorage.setItem("objects",JSON.stringify(objects)); 
+renderObjects(); updateSelect(); 
+document.getElementById("objectInput").value=""; 
 } 
  
-// Objects 
-function addObject(){ 
-let text=document.getElementById("objectText").value; 
-if(!text)return; 
+function renderObjects(){ 
 let list=document.getElementById("objectList"); 
+list.innerHTML=""; 
+objects.forEach(o=>{ 
 let div=document.createElement("div"); 
 div.className="card"; 
-div.innerText=text; 
+div.innerText=o; 
 list.appendChild(div); 
-document.getElementById("objectText").value=""; 
+}); 
 } 
  
-// Finance Chart 
+function updateSelect(){ 
+let select=document.getElementById("objectSelect"); 
+select.innerHTML=""; 
+objects.forEach(o=>{ 
+let opt=document.createElement("option"); 
+opt.text=o; select.add(opt); 
+}); 
+} 
+ 
+function saveFinance(){ 
+let obj=document.getElementById("objectSelect").value; 
+let income=parseFloat(document.getElementById("incomeInput").value)||0; 
+let expense=parseFloat(document.getElementById("expenseInput").value)||0; 
+finances.push({obj,income,expense}); 
+localStorage.setItem("finances",JSON.stringify(finances)); 
+renderFinance(); drawChart(); 
+} 
+ 
+function renderFinance(){ 
+let list=document.getElementById("financeList"); 
+list.innerHTML=""; 
+finances.forEach(f=>{ 
+let div=document.createElement("div"); 
+div.className="card"; 
+div.innerHTML=f.obj+"<br>Доход: "+f.income+" ₽<br>Расход: "+f.expense+" ₽"; 
+list.appendChild(div); 
+}); 
+} 
+ 
 function drawChart(){ 
-const canvas=document.getElementById("financeChart"); 
+const canvas=document.getElementById("chart"); 
 const ctx=canvas.getContext("2d"); 
-canvas.width=350; 
-canvas.height=180; 
- 
-let income=parseFloat(localStorage.getItem("income"))||1000000; 
-let expense=parseFloat(localStorage.getItem("expense"))||600000; 
-let profit=income-expense; 
- 
-let total=income; 
-let percent=(expense/total)*180; 
- 
+canvas.width=350; canvas.height=200; 
+let totalIncome=finances.reduce((a,b)=>a+b.income,0); 
+let totalExpense=finances.reduce((a,b)=>a+b.expense,0); 
+let percent=(totalExpense/(totalIncome||1))*180; 
 ctx.clearRect(0,0,canvas.width,canvas.height); 
- 
 ctx.beginPath(); 
-ctx.arc(175,170,150,Math.PI,Math.PI+(percent*Math.PI/180)); 
-ctx.lineWidth=20; 
-ctx.strokeStyle="#ff4d4d"; 
-ctx.stroke(); 
- 
+ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180)); 
+ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke(); 
 ctx.beginPath(); 
-ctx.arc(175,170,150,Math.PI+(percent*Math.PI/180),2*Math.PI); 
-ctx.lineWidth=20; 
-ctx.strokeStyle="#00ff9d"; 
-ctx.stroke(); 
+ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI); 
+ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke(); 
+canvas.onclick=function(){ 
+alert("Доход: "+totalIncome+" ₽\nРасход: "+totalExpense+" ₽"); 
 } 
+document.getElementById("financeSummary").innerHTML= 
+"Доход: "+totalIncome+" ₽ | Расход: "+totalExpense+" ₽ | Прибыль: "+(totalIncome-totalExpense)+" ₽"; 
+} 
+ 
+function renderCalendar(){ 
+let grid=document.getElementById("calendarGrid"); 
+grid.innerHTML=""; 
+for(let i=1;i<=30;i++){ 
+let day=document.createElement("div"); 
+day.className="calendar-day"; 
+day.innerText=i; 
+day.onclick=function(){day.classList.toggle("marked");} 
+grid.appendChild(day); 
+} 
+} 
+ 
+function addDecision(){ 
+let text=document.getElementById("decisionInput").value; 
+if(!text)return; 
+decisions.push(text); 
+localStorage.setItem("decisions",JSON.stringify(decisions)); 
+renderDecisions(); 
+document.getElementById("decisionInput").value=""; 
+} 
+ 
+function renderDecisions(){ 
+let list=document.getElementById("decisionList"); 
+list.innerHTML=""; 
+decisions.forEach(d=>{ 
+let div=document.createElement("div"); 
+div.className="card"; 
+div.innerText=d; 
+list.appendChild(div); 
+}); 
+} 
+ 
+renderObjects(); 
+updateSelect(); 
+renderFinance(); 
+renderCalendar(); 
+renderDecisions(); 
 drawChart(); 
 </script> 
  
