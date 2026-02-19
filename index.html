@@ -14,7 +14,108 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">  
 
-<style>  
+<style>  /* ===== Calendar v2 ===== */
+.calendar-card { padding: 16px; }
+
+.cal-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:12px;
+}
+
+.cal-nav{
+  width:44px; height:44px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.06);
+  color:#fff; font-size:22px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: transform .18s ease, background .18s ease;
+}
+.cal-nav:active{ transform: scale(.96); background: rgba(255,255,255,.09); }
+
+.cal-title{ text-align:center; line-height:1.1; }
+.cal-month{ font-weight:700; font-size:16px; }
+.cal-year{ opacity:.7; font-size:12px; margin-top:2px; }
+
+.cal-dow{
+  display:grid; grid-template-columns: repeat(7, 1fr);
+  gap:8px;
+  opacity:.7;
+  font-size:12px;
+  margin-bottom:10px;
+}
+.cal-dow > div{ text-align:center; }
+
+.cal-grid{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:10px;
+}
+
+.cal-day{
+  height:44px;
+  border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.05);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  position:relative;
+  user-select:none;
+  -webkit-user-select:none;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.cal-day:active{ transform: scale(.97); }
+.cal-day.muted{ opacity:.35; }
+
+.cal-day.done{
+  border-color: rgba(0,255,170,.35);
+  background: rgba(0,255,170,.10);
+}
+
+.cal-day.has-note::after{
+  content:"";
+  position:absolute;
+  bottom:7px; width:6px; height:6px;
+  border-radius:50%;
+  background: rgba(255, 196, 0, .95);
+  box-shadow: 0 0 12px rgba(255,196,0,.35);
+}
+
+/* Note modal */
+.modal{ position:fixed; inset:0; z-index:9999; }
+.modal.hidden{ display:none; }
+.modal-backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.45); }
+.modal-sheet{
+  position:absolute; left:12px; right:12px; bottom:12px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(20,24,34,.75);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding:14px;
+}
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; margin-bottom:10px;
+}
+.modal-title{ font-weight:700; }
+
+.input.cal-note{
+  width:100%;
+  min-height:110px;
+  resize:none;
+  padding:12px 12px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.06);
+  color:#fff;
+  outline:none;
+  margin: 6px 0 12px;
+}
+.modal-actions{ display:flex; gap:10px; }
+.btn{ flex:1; height:44px; border-radius:16px; border:1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.06); color:#fff; }
 
 *{margin:0;padding:0;box-sizing:border-box}  
 
@@ -1078,7 +1179,26 @@ html, body{
 
 <div class="card">  
 
-<div id="calendarGrid"></div>  
+<div id="calendarGrid"><!-- Calendar v2 UI -->
+<div class="calendar-card">
+  <div class="cal-top">
+    <button class="cal-nav" id="calPrev" aria-label="Предыдущий месяц">‹</button>
+
+    <div class="cal-title">
+      <div id="calMonthLabel" class="cal-month">Март</div>
+      <div id="calYearLabel" class="cal-year">2026</div>
+    </div>
+
+    <button class="cal-nav" id="calNext" aria-label="Следующий месяц">›</button>
+  </div>
+
+  <div class="cal-dow">
+    <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+  </div>
+
+  <div id="calGrid" class="cal-grid"></div>
+</div>
+<!-- /Calendar v2 UI --></div>  
 
 </div>  
 
@@ -1158,7 +1278,210 @@ let finances = JSON.parse(localStorage.getItem("finances"))||[];
 
 let decisions = JSON.parse(localStorage.getItem("decisions"))||[];  
 
- 
+ // ===== Calendar (FEDERACIA) v2 =====
+const CAL_STORAGE_MARKS = "FED_CAL_MARKS";   // { "YYYY-MM-DD": true }
+const CAL_STORAGE_NOTES = "FED_CAL_NOTES";   // { "YYYY-MM-DD": "text" }
+
+function safeJson(str, fallback){
+  try{ return str ? JSON.parse(str) : fallback; } catch(e){ return fallback; }
+}
+
+let calView = (function(){
+  const d = new Date();
+  return { y: d.getFullYear(), m: d.getMonth() }; // m 0..11
+})();
+
+let calMarks = safeJson(localStorage.getItem(CAL_STORAGE_MARKS), {});
+let calNotes = safeJson(localStorage.getItem(CAL_STORAGE_NOTES), {});
+
+let calPressTimer = null;
+let calPressedKey = null;
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function dateKey(y,m,day){ return `${y}-${pad2(m+1)}-${pad2(day)}`; }
+
+function monthNameRu(m){
+  const names = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+  return names[m] || "";
+}
+
+function normalizeYM(y, m){
+  const d = new Date(y, m, 1);
+  return { y: d.getFullYear(), m: d.getMonth() };
+}
+
+function renderCalendarV2(){
+  const grid = document.getElementById("calGrid");
+  const ml = document.getElementById("calMonthLabel");
+  const yl = document.getElementById("calYearLabel");
+  if(!grid || !ml || !yl) return;
+
+  ml.textContent = monthNameRu(calView.m);
+  yl.textContent = String(calView.y);
+  grid.innerHTML = "";
+
+  const first = new Date(calView.y, calView.m, 1);
+  const last = new Date(calView.y, calView.m + 1, 0);
+  const daysInMonth = last.getDate();
+
+  // Пн=0..Вс=6
+  const jsDow = first.getDay();           // Вс=0..Сб=6
+  const startOffset = (jsDow + 6) % 7;    // переводим: Пн=0
+
+  // добивка предыдущих
+  const prevLast = new Date(calView.y, calView.m, 0).getDate();
+  for(let i=0; i<startOffset; i++){
+    const day = prevLast - (startOffset - 1 - i);
+    grid.appendChild(makeDayCell(calView.y, calView.m - 1, day, true));
+  }
+
+  // текущий месяц
+  for(let day=1; day<=daysInMonth; day++){
+    grid.appendChild(makeDayCell(calView.y, calView.m, day, false));
+  }
+
+  // добивка следующего до ровной сетки
+  const total = startOffset + daysInMonth;
+  const tail = (7 - (total % 7)) % 7;
+  for(let day=1; day<=tail; day++){
+    grid.appendChild(makeDayCell(calView.y, calView.m + 1, day, true));
+  }
+}
+
+function makeDayCell(y, m, day, muted){
+  const nm = normalizeYM(y,m);
+  const key = dateKey(nm.y, nm.m, day);
+
+  const el = document.createElement("div");
+  el.className = "cal-day" + (muted ? " muted" : "");
+  el.textContent = String(day);
+  el.dataset.key = key;
+
+  if(calMarks[key]) el.classList.add("done");
+  if(calNotes[key] && String(calNotes[key]).trim()) el.classList.add("has-note");
+
+  // tap + long press (iOS-friendly)
+  el.addEventListener("touchstart", ()=> startPress(key), {passive:true});
+  el.addEventListener("touchend", endPress, {passive:true});
+  el.addEventListener("touchcancel", cancelPress, {passive:true});
+
+  el.addEventListener("mousedown", ()=> startPress(key));
+  el.addEventListener("mouseup", endPress);
+  el.addEventListener("mouseleave", cancelPress);
+
+  return el;
+}
+
+function startPress(key){
+  cancelPress();
+  calPressedKey = key;
+
+  calPressTimer = setTimeout(()=>{
+    // long press -> note
+    openCalNote(key);
+    calPressTimer = null;
+  }, 450);
+}
+
+function endPress(){
+  // если таймер не успел сработать — это обычный тап
+  if(calPressTimer){
+    clearTimeout(calPressTimer);
+    calPressTimer = null;
+    toggleCalDone(calPressedKey);
+  }
+  calPressedKey = null;
+}
+
+function cancelPress(){
+  if(calPressTimer){
+    clearTimeout(calPressTimer);
+    calPressTimer = null;
+  }
+  calPressedKey = null;
+}
+
+function toggleCalDone(key){
+  if(!key) return;
+  calMarks[key] = !calMarks[key];
+  localStorage.setItem(CAL_STORAGE_MARKS, JSON.stringify(calMarks));
+  renderCalendarV2();
+}
+
+function openCalNote(key){
+  const modal = document.getElementById("calNoteModal");
+  const title = document.getElementById("calNoteTitle");
+  const text = document.getElementById("calNoteText");
+  if(!modal || !title || !text) return;
+
+  title.textContent = `Заметка • ${key}`;
+  text.value = calNotes[key] || "";
+  modal.dataset.key = key;
+
+  modal.classList.remove("hidden");
+}
+
+function closeCalNote(){
+  const modal = document.getElementById("calNoteModal");
+  if(!modal) return;
+  modal.classList.add("hidden");
+  modal.dataset.key = "";
+}
+
+function bindCalendarUI(){
+  const prev = document.getElementById("calPrev");
+  const next = document.getElementById("calNext");
+
+  if(prev) prev.addEventListener("click", ()=>{
+    const d = new Date(calView.y, calView.m - 1, 1);
+    calView.y = d.getFullYear(); calView.m = d.getMonth();
+    renderCalendarV2();
+  });
+
+  if(next) next.addEventListener("click", ()=>{
+    const d = new Date(calView.y, calView.m + 1, 1);
+    calView.y = d.getFullYear(); calView.m = d.getMonth();
+    renderCalendarV2();
+  });
+
+  const modal = document.getElementById("calNoteModal");
+  const close = document.getElementById("calNoteClose");
+  const save = document.getElementById("calNoteSave");
+  const del  = document.getElementById("calNoteDelete");
+
+  if(close) close.addEventListener("click", closeCalNote);
+
+  if(modal){
+    modal.addEventListener("click",(e)=>{
+      if(e.target && e.target.dataset && e.target.dataset.close === "1") closeCalNote();
+    });
+  }
+
+  if(save) save.addEventListener("click", ()=>{
+    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
+    const text = document.getElementById("calNoteText");
+    if(!key || !text) return;
+
+    const val = String(text.value || "").trim();
+    if(val){
+      calNotes[key] = val;
+    }else{
+      delete calNotes[key];
+    }
+    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
+    closeCalNote();
+    renderCalendarV2();
+  });
+
+  if(del) del.addEventListener("click", ()=>{
+    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
+    if(!key) return;
+    delete calNotes[key];
+    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
+    closeCalNote();
+    renderCalendarV2();
+  });
+}
 
 // ===== Finance Entries v2 ===== 
 
@@ -1297,8 +1620,11 @@ if(!text)return;
 objects.push(text);  
 
 localStorage.setItem("objects",JSON.stringify(objects));  
+renderObjects();
+document.getElementById("objectInput").value="";
+recalcHome();
+}
 
- 
 
 function recalcHome(){ 
 
@@ -1584,7 +1910,6 @@ recalcHome();
 
 document.getElementById("objectInput").value="";  
 
-}  
 
 function renderFinance(){ 
 
@@ -1848,7 +2173,23 @@ recalcHome();
 
 </script>  
 
-</body>  
+</body>  <!-- Calendar Note Modal -->
+<div id="calNoteModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" data-close="1"></div>
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div class="modal-title" id="calNoteTitle">Заметка</div>
+      <button class="icon-btn" id="calNoteClose" aria-label="Закрыть">✕</button>
+    </div>
+
+    <textarea id="calNoteText" class="input cal-note" placeholder="Напиши заметку..."></textarea>
+
+    <div class="modal-actions">
+      <button class="btn primary" id="calNoteSave">Сохранить</button>
+      <button class="btn" id="calNoteDelete">Удалить заметку</button>
+    </div>
+  </div>
+</div>
 
 </html> 
 
