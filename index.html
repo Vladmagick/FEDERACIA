@@ -1,415 +1,382 @@
-<!DOCTYPE html> 
-<html lang="ru"> 
-<head> 
-<meta charset="UTF-8"> 
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-<title>ФЕДЕРАЦИЯ</title> 
+<!DOCTYPE html>  
+<html lang="ru">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>ФЕДЕРАЦИЯ</title>  
+<script src="https://telegram.org/js/telegram-web-app.js"></script>  
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">  
+<style>  
+*{margin:0;padding:0;box-sizing:border-box}  
+body{  
+font-family:'Inter',sans-serif;  
+background:linear-gradient(180deg,#0b0f17,#0f172a);  
+color:#fff;  
+min-height:100vh;  
+overflow-x:hidden;  
+}  
  
-<script src="https://telegram.org/js/telegram-web-app.js"></script> 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"> 
- 
-<style> 
-*{margin:0;padding:0;box-sizing:border-box} 
-body{ 
-font-family:'Inter',sans-serif; 
-background:linear-gradient(180deg,#0b0f17,#0f172a); 
-color:#fff; 
-min-height:100vh; 
-overflow-x:hidden; 
+html, body{ 
+  height:100%; 
+  overflow:hidden; /* фикс прыжков iOS/WebView */ 
+  overscroll-behavior:none; 
 } 
+ 
 .app{ 
-max-width:430px; 
-margin:0 auto; 
-padding:20px 16px 110px; 
+  height:100dvh; /* стабильная высота в iOS */ 
+  overflow-y:auto; 
+  -webkit-overflow-scrolling:touch; 
+  overscroll-behavior:none; 
+  padding-bottom:calc(140px + env(safe-area-inset-bottom)); 
 } 
-h1{font-size:22px;font-weight:600;margin-bottom:16px} 
- 
-.card{ 
-background:rgba(255,255,255,0.06); 
-backdrop-filter:blur(25px); 
-border-radius:24px; 
-padding:18px; 
-margin-bottom:16px; 
-box-shadow:0 15px 40px rgba(0,0,0,0.5); 
-transition:0.25s ease; 
-} 
-.card:active{transform:scale(0.97)} 
- 
-input,textarea,select{ 
-width:100%; 
-margin-top:10px; 
-padding:12px; 
-border-radius:16px; 
-border:none; 
-background:rgba(255,255,255,0.08); 
-color:#fff; 
-} 
- 
-button{ 
-margin-top:12px; 
-padding:12px; 
-border-radius:18px; 
-border:none; 
-background:rgba(255,255,255,0.1); 
-color:#fff; 
-transition:0.2s; 
-} 
-button:active{transform:scale(0.96)} 
- 
-canvas{width:100%;height:200px;cursor:pointer} 
- 
-.green{color:#00ff9d} 
-.orange{color:#ff9d00} 
-.red{color:#ff4d4d} 
- 
-.hidden{display:none} 
- 
-/* ===== TELEGRAM DOCK (volume glass) ===== */ 
  
 .bottom-dock{ 
-  position:fixed; 
-  left:50%; 
-  transform:translateX(-50%); 
-  bottom:18px; 
-  width:92%; 
-  max-width:430px; 
-  height:76px; 
-  border-radius:38px; 
- 
-  background:rgba(20,24,32,0.62); 
-  backdrop-filter:blur(30px); 
- 
-  display:flex; 
-  justify-content:space-around; 
-  align-items:center; 
- 
-  box-shadow: 
-    0 18px 50px rgba(0,0,0,0.55), 
-    inset 0 1px 0 rgba(255,255,255,0.10), 
-    inset 0 -1px 0 rgba(0,0,0,0.35); 
- 
-  border:1px solid rgba(255,255,255,0.07); 
-  z-index:999; 
+  bottom:calc(18px + env(safe-area-inset-bottom)); 
 } 
  
 .dock-item{ 
-  width:72px; 
-  height:60px; 
-  border-radius:22px; 
- 
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
-  justify-content:center; 
- 
-  color:rgba(255,255,255,0.58); 
-  font-size:11px; 
-  gap:3px; 
- 
-  transition: transform .35s cubic-bezier(.2,.8,.2,1),  
-              color .25s ease, 
-              background .25s ease; 
-  position:relative; 
-  user-select:none; 
-  -webkit-tap-highlight-color: transparent; 
+  touch-action:manipulation; 
 } 
- 
-.dock-item .dock-icon{ 
-  font-size:20px; 
-  line-height:20px; 
-  transition: transform .35s cubic-bezier(.2,.8,.2,1); 
-} 
- 
-.dock-item.active{ 
-  color:#00ff9d; 
-  transform: translateY(-7px); 
-} 
- 
-.dock-item.active::before{ 
-  content:""; 
-  position:absolute; 
-  inset:6px; 
-  border-radius:18px; 
-  background:rgba(0,255,157,0.10); 
-  box-shadow:0 0 26px rgba(0,255,157,0.38); 
-  z-index:-1; 
-} 
- 
-.dock-item:active{ 
-  transform: translateY(-6px) scale(0.96); 
-} 
-.dock-item:active .dock-icon{ 
-  transform: scale(0.90); 
-} 
- 
-/* ===== Screen animation base ===== */ 
-.app > div{ 
-  transition: opacity .30s ease, transform .30s ease; 
-  will-change: opacity, transform; 
-} 
-.calendar-day{ 
-display:inline-block; 
-width:42px;height:42px; 
-line-height:42px; 
-text-align:center; 
-margin:4px; 
-border-radius:12px; 
-background:rgba(255,255,255,0.06); 
-font-size:13px; 
-} 
-.calendar-day.marked{background:#00ff9d;color:#000} 
-</style> 
-</head> 
- 
-<body> 
-<div class="app"> 
- 
-<div id="home"> 
-<h1>ФЕДЕРАЦИЯ</h1> 
-<div class="card"> 
-<div>Финансы месяца</div> 
-<canvas id="chart"></canvas> 
-<div id="financeSummary"></div> 
-</div> 
-</div> 
- 
-<div id="finance" class="hidden"> 
-<h1>Финансы</h1> 
-<div class="card"> 
-<select id="objectSelect"></select> 
-<input type="number" id="incomeInput" placeholder="Доход"> 
-<input type="number" id="expenseInput" placeholder="Расход"> 
-<button onclick="saveFinance()">Сохранить</button> 
-</div> 
-<div id="financeList"></div> 
-</div> 
- 
-<div id="objects" class="hidden"> 
-<h1>Объекты</h1> 
-<div class="card"> 
-<textarea id="objectInput" placeholder="Новый объект"></textarea> 
-<button onclick="addObject()">Добавить</button> 
-</div> 
-<div id="objectList"></div> 
-</div> 
- 
-<div id="calendar" class="hidden"> 
-<h1>Календарь</h1> 
-<div class="card"> 
-<div id="calendarGrid"></div> 
-</div> 
-</div> 
- 
-<div id="decisions" class="hidden"> 
-<h1>Решения</h1> 
-<div class="card"> 
-<textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea> 
-<button onclick="addDecision()">Сохранить</button> 
-</div> 
-<div id="decisionList"></div> 
-</div> 
- 
-</div> 
- 
-<div class="bottom-dock"> 
-  <div class="dock-item active" onclick="switchTab('home', this)"> 
-    <div class="dock-icon">👤</div> 
-    <div class="dock-label">Главная</div> 
-  </div> 
- 
-  <div class="dock-item" onclick="switchTab('finance', this)"> 
-    <div class="dock-icon">💰</div> 
-    <div class="dock-label">Финансы</div> 
-  </div> 
- 
-  <div class="dock-item" onclick="switchTab('objects', this)"> 
-    <div class="dock-icon">💬</div> 
-    <div class="dock-label">Объекты</div> 
-  </div> 
- 
-  <div class="dock-item" onclick="switchTab('calendar', this)"> 
-    <div class="dock-icon">📅</div> 
-    <div class="dock-label">Календарь</div> 
-  </div> 
- 
-  <div class="dock-item" onclick="switchTab('decisions', this)"> 
-    <div class="dock-icon">🧠</div> 
-    <div class="dock-label">еще</div> 
-  </div> 
-</div> 
- 
-<script> 
-const tg = window.Telegram.WebApp; 
-tg.expand(); tg.ready(); 
- 
-let objects = JSON.parse(localStorage.getItem("objects"))||[]; 
-let finances = JSON.parse(localStorage.getItem("finances"))||[]; 
-let decisions = JSON.parse(localStorage.getItem("decisions"))||[]; 
- 
-let __switching = false; 
- 
-function switchTab(id, el){ 
-  if(__switching) return; 
-  __switching = true; 
- 
-  // Active button 
-  document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active")); 
-  el.classList.add("active"); 
- 
-  // Haptic (Telegram) 
-  try{ 
-    if(window.Telegram?.WebApp?.HapticFeedback){ 
-      Telegram.WebApp.HapticFeedback.impactOccurred("light"); 
-    } 
-  }catch(e){} 
- 
-  // Screen animation 
-  const sections = document.querySelectorAll(".app > div"); 
-  const current = Array.from(sections).find(s => !s.classList.contains("hidden")); 
-  const next = document.getElementById(id); 
- 
-  if(current === next){ 
-    __switching = false; 
-    return; 
-  } 
- 
-  if(current){ 
-    current.style.opacity = "0"; 
-    current.style.transform = "translateY(14px)"; 
-    setTimeout(()=>{ 
-      current.classList.add("hidden"); 
-      current.style.opacity = ""; 
-      current.style.transform = ""; 
-    }, 170); 
-  } 
- 
-  next.classList.remove("hidden"); 
-  next.style.opacity = "0"; 
-  next.style.transform = "translateY(14px)"; 
- 
-  requestAnimationFrame(()=>{ 
-    requestAnimationFrame(()=>{ 
-      next.style.opacity = "1"; 
-      next.style.transform = "translateY(0)"; 
-      setTimeout(()=>{ 
-        next.style.opacity = ""; 
-        next.style.transform = ""; 
-        __switching = false; 
-      }, 220); 
-    }); 
-  }); 
-} 
- 
-function addObject(){ 
-let text=document.getElementById("objectInput").value; 
-if(!text)return; 
-objects.push(text); 
-localStorage.setItem("objects",JSON.stringify(objects)); 
-renderObjects(); updateSelect(); 
-document.getElementById("objectInput").value=""; 
-} 
- 
-function renderObjects(){ 
-let list=document.getElementById("objectList"); 
-list.innerHTML=""; 
-objects.forEach(o=>{ 
-let div=document.createElement("div"); 
-div.className="card"; 
-div.innerText=o; 
-list.appendChild(div); 
-}); 
-} 
- 
-function updateSelect(){ 
-let select=document.getElementById("objectSelect"); 
-select.innerHTML=""; 
-objects.forEach(o=>{ 
-let opt=document.createElement("option"); 
-opt.text=o; select.add(opt); 
-}); 
-} 
- 
-function saveFinance(){ 
-let obj=document.getElementById("objectSelect").value; 
-let income=parseFloat(document.getElementById("incomeInput").value)||0; 
-let expense=parseFloat(document.getElementById("expenseInput").value)||0; 
-finances.push({obj,income,expense}); 
-localStorage.setItem("finances",JSON.stringify(finances)); 
-renderFinance(); drawChart(); 
-} 
- 
-function renderFinance(){ 
-let list=document.getElementById("financeList"); 
-list.innerHTML=""; 
-finances.forEach(f=>{ 
-let div=document.createElement("div"); 
-div.className="card"; 
-div.innerHTML=f.obj+"<br>Доход: "+f.income+" ₽<br>Расход: "+f.expense+" ₽"; 
-list.appendChild(div); 
-}); 
-} 
- 
-function drawChart(){ 
-const canvas=document.getElementById("chart"); 
-const ctx=canvas.getContext("2d"); 
-canvas.width=350; canvas.height=200; 
-let totalIncome=finances.reduce((a,b)=>a+b.income,0); 
-let totalExpense=finances.reduce((a,b)=>a+b.expense,0); 
-let percent=(totalExpense/(totalIncome||1))*180; 
-ctx.clearRect(0,0,canvas.width,canvas.height); 
-ctx.beginPath(); 
-ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180)); 
-ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke(); 
-ctx.beginPath(); 
-ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI); 
-ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke(); 
-canvas.onclick=function(){ 
-alert("Доход: "+totalIncome+" ₽\nРасход: "+totalExpense+" ₽"); 
-} 
-document.getElementById("financeSummary").innerHTML= 
-"Доход: "+totalIncome+" ₽ | Расход: "+totalExpense+" ₽ | Прибыль: "+(totalIncome-totalExpense)+" ₽"; 
-} 
- 
-function renderCalendar(){ 
-let grid=document.getElementById("calendarGrid"); 
-grid.innerHTML=""; 
-for(let i=1;i<=30;i++){ 
-let day=document.createElement("div"); 
-day.className="calendar-day"; 
-day.innerText=i; 
-day.onclick=function(){day.classList.toggle("marked");} 
-grid.appendChild(day); 
-} 
-} 
- 
-function addDecision(){ 
-let text=document.getElementById("decisionInput").value; 
-if(!text)return; 
-decisions.push(text); 
-localStorage.setItem("decisions",JSON.stringify(decisions)); 
-renderDecisions(); 
-document.getElementById("decisionInput").value=""; 
-} 
- 
-function renderDecisions(){ 
-let list=document.getElementById("decisionList"); 
-list.innerHTML=""; 
-decisions.forEach(d=>{ 
-let div=document.createElement("div"); 
-div.className="card"; 
-div.innerText=d; 
-list.appendChild(div); 
-}); 
-} 
- 
-renderObjects(); 
-updateSelect(); 
-renderFinance(); 
-renderCalendar(); 
-renderDecisions(); 
-drawChart(); 
-</script> 
- 
-</body> 
+.app{  
+max-width:430px;  
+margin:0 auto;  
+padding:20px 16px 110px;  
+}  
+h1{font-size:22px;font-weight:600;margin-bottom:16px}  
+.card{  
+background:rgba(255,255,255,0.06);  
+backdrop-filter:blur(25px);  
+border-radius:24px;  
+padding:18px;  
+margin-bottom:16px;  
+box-shadow:0 15px 40px rgba(0,0,0,0.5);  
+transition:0.25s ease;  
+}  
+.card:active{transform:scale(0.97)}  
+input,textarea,select{  
+width:100%;  
+margin-top:10px;  
+padding:12px;  
+border-radius:16px;  
+border:none;  
+background:rgba(255,255,255,0.08);  
+color:#fff;  
+}  
+button{  
+margin-top:12px;  
+padding:12px;  
+border-radius:18px;  
+border:none;  
+background:rgba(255,255,255,0.1);  
+color:#fff;  
+transition:0.2s;  
+}  
+button:active{transform:scale(0.96)}  
+canvas{width:100%;height:200px;cursor:pointer}  
+.green{color:#00ff9d}  
+.orange{color:#ff9d00}  
+.red{color:#ff4d4d}  
+.hidden{display:none}  
+/* ===== TELEGRAM DOCK (volume glass) ===== */  
+.bottom-dock{  
+position:fixed;  
+left:50%;  
+transform:translateX(-50%);  
+bottom:18px;  
+width:92%;  
+max-width:430px;  
+height:76px;  
+border-radius:38px;  
+background:rgba(20,24,32,0.62);  
+backdrop-filter:blur(30px);  
+display:flex;  
+justify-content:space-around;  
+align-items:center;  
+box-shadow:  
+0 18px 50px rgba(0,0,0,0.55),  
+inset 0 1px 0 rgba(255,255,255,0.10),  
+inset 0 -1px 0 rgba(0,0,0,0.35);  
+border:1px solid rgba(255,255,255,0.07);  
+z-index:999;  
+}  
+.dock-item{  
+width:72px;  
+height:60px;  
+border-radius:22px;  
+display:flex;  
+flex-direction:column;  
+align-items:center;  
+justify-content:center;  
+color:rgba(255,255,255,0.58);  
+font-size:11px;  
+gap:3px;  
+transition: transform .35s cubic-bezier(.2,.8,.2,1),  
+color .25s ease,  
+background .25s ease;  
+position:relative;  
+user-select:none;  
+-webkit-tap-highlight-color: transparent;  
+}  
+.dock-item .dock-icon{  
+font-size:20px;  
+line-height:20px;  
+transition: transform .35s cubic-bezier(.2,.8,.2,1);  
+}  
+.dock-item.active{  
+color:#00ff9d;  
+transform: translateY(-7px);  
+}  
+.dock-item.active::before{  
+content:"";  
+position:absolute;  
+inset:6px;  
+border-radius:18px;  
+background:rgba(0,255,157,0.10);  
+box-shadow:0 0 26px rgba(0,255,157,0.38);  
+z-index:-1;  
+}  
+.dock-item:active{  
+transform: translateY(-6px) scale(0.96);  
+}  
+.dock-item:active .dock-icon{  
+transform: scale(0.90);  
+}  
+/* ===== Screen animation base ===== */  
+.app > div{  
+transition: opacity .30s ease, transform .30s ease;  
+will-change: opacity, transform;  
+}  
+.calendar-day{  
+display:inline-block;  
+width:42px;height:42px;  
+line-height:42px;  
+text-align:center;  
+margin:4px;  
+border-radius:12px;  
+background:rgba(255,255,255,0.06);  
+font-size:13px;  
+}  
+.calendar-day.marked{background:#00ff9d;color:#000}  
+</style>  
+</head>  
+<body>  
+<div class="app">  
+<div id="home">  
+<h1>ФЕДЕРАЦИЯ</h1>  
+<div class="card">  
+<div>Финансы месяца</div>  
+<canvas id="chart"></canvas>  
+<div id="financeSummary"></div>  
+</div>  
+</div>  
+<div id="finance" class="hidden">  
+<h1>Финансы</h1>  
+<div class="card">  
+<select id="objectSelect"></select>  
+<input type="number" id="incomeInput" placeholder="Доход">  
+<input type="number" id="expenseInput" placeholder="Расход">  
+<button onclick="saveFinance()">Сохранить</button>  
+</div>  
+<div id="financeList"></div>  
+</div>  
+<div id="objects" class="hidden">  
+<h1>Объекты</h1>  
+<div class="card">  
+<textarea id="objectInput" placeholder="Новый объект"></textarea>  
+<button onclick="addObject()">Добавить</button>  
+</div>  
+<div id="objectList"></div>  
+</div>  
+<div id="calendar" class="hidden">  
+<h1>Календарь</h1>  
+<div class="card">  
+<div id="calendarGrid"></div>  
+</div>  
+</div>  
+<div id="decisions" class="hidden">  
+<h1>Решения</h1>  
+<div class="card">  
+<textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea>  
+<button onclick="addDecision()">Сохранить</button>  
+</div>  
+<div id="decisionList"></div>  
+</div>  
+</div>  
+<div class="bottom-dock">  
+<div class="dock-item active" onclick="switchTab('home', this)">  
+<div class="dock-icon">👤</div>  
+<div class="dock-label">Главная</div>  
+</div>  
+<div class="dock-item" onclick="switchTab('finance', this)">  
+<div class="dock-icon">💰</div>  
+<div class="dock-label">Финансы</div>  
+</div>  
+<div class="dock-item" onclick="switchTab('objects', this)">  
+<div class="dock-icon">💬</div>  
+<div class="dock-label">Объекты</div>  
+</div>  
+<div class="dock-item" onclick="switchTab('calendar', this)">  
+<div class="dock-icon">📅</div>  
+<div class="dock-label">Календарь</div>  
+</div>  
+<div class="dock-item" onclick="switchTab('decisions', this)">  
+<div class="dock-icon">🧠</div>  
+<div class="dock-label">меню</div>  
+</div>  
+</div>  
+<script>  
+const tg = window.Telegram.WebApp;  
+tg.expand(); tg.ready();  
+try{ tg.disableVerticalSwipes(); }catch(e){} 
+let objects = JSON.parse(localStorage.getItem("objects"))||[];  
+let finances = JSON.parse(localStorage.getItem("finances"))||[];  
+let decisions = JSON.parse(localStorage.getItem("decisions"))||[];  
+let __switching = false;  
+function switchTab(id, el){  
+document.querySelector(".app").scrollTop = 0; 
+if(__switching) return;  
+__switching = true;  
+// Active button  
+document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active"));  
+el.classList.add("active");  
+// Haptic (Telegram)  
+try{  
+if(window.Telegram?.WebApp?.HapticFeedback){  
+Telegram.WebApp.HapticFeedback.impactOccurred("light");  
+}  
+}catch(e){}  
+// Screen animation  
+const sections = document.querySelectorAll(".app > div");  
+const current = Array.from(sections).find(s => !s.classList.contains("hidden"));  
+const next = document.getElementById(id);  
+if(current === next){  
+__switching = false;  
+return;  
+}  
+if(current){  
+current.style.opacity = "0";  
+current.style.transform = "translateY(14px)";  
+setTimeout(()=>{  
+current.classList.add("hidden");  
+current.style.opacity = "";  
+current.style.transform = "";  
+}, 170);  
+}  
+next.classList.remove("hidden");  
+next.style.opacity = "0";  
+next.style.transform = "translateY(14px)";  
+requestAnimationFrame(()=>{  
+requestAnimationFrame(()=>{  
+next.style.opacity = "1";  
+next.style.transform = "translateY(0)";  
+setTimeout(()=>{  
+next.style.opacity = "";  
+next.style.transform = "";  
+__switching = false;  
+}, 220);  
+});  
+});  
+}  
+function addObject(){  
+let text=document.getElementById("objectInput").value;  
+if(!text)return;  
+objects.push(text);  
+localStorage.setItem("objects",JSON.stringify(objects));  
+renderObjects(); updateSelect();  
+document.getElementById("objectInput").value="";  
+}  
+function renderObjects(){  
+let list=document.getElementById("objectList");  
+list.innerHTML="";  
+objects.forEach(o=>{  
+let div=document.createElement("div");  
+div.className="card";  
+div.innerText=o;  
+list.appendChild(div);  
+});  
+}  
+function updateSelect(){  
+let select=document.getElementById("objectSelect");  
+select.innerHTML="";  
+objects.forEach(o=>{  
+let opt=document.createElement("option");  
+opt.text=o; select.add(opt);  
+});  
+}  
+function saveFinance(){  
+let obj=document.getElementById("objectSelect").value;  
+let income=parseFloat(document.getElementById("incomeInput").value)||0;  
+let expense=parseFloat(document.getElementById("expenseInput").value)||0;  
+finances.push({obj,income,expense});  
+localStorage.setItem("finances",JSON.stringify(finances));  
+renderFinance(); drawChart();  
+}  
+function renderFinance(){  
+let list=document.getElementById("financeList");  
+list.innerHTML="";  
+finances.forEach(f=>{  
+let div=document.createElement("div");  
+div.className="card";  
+div.innerHTML=f.obj+"<br>Доход: "+f.income+" ₽<br>Расход: "+f.expense+" ₽";  
+list.appendChild(div);  
+});  
+}  
+function drawChart(){  
+const canvas=document.getElementById("chart");  
+const ctx=canvas.getContext("2d");  
+canvas.width=350; canvas.height=200;  
+let totalIncome=finances.reduce((a,b)=>a+b.income,0);  
+let totalExpense=finances.reduce((a,b)=>a+b.expense,0);  
+let percent=(totalExpense/(totalIncome||1))*180;  
+ctx.clearRect(0,0,canvas.width,canvas.height);  
+ctx.beginPath();  
+ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180));  
+ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke();  
+ctx.beginPath();  
+ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI);  
+ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke();  
+canvas.onclick=function(){  
+alert("Доход: "+totalIncome+" ₽\nРасход: "+totalExpense+" ₽");  
+}  
+document.getElementById("financeSummary").innerHTML=  
+"Доход: "+totalIncome+" ₽ | Расход: "+totalExpense+" ₽ | Прибыль: "+(totalIncome-totalExpense)+" ₽";  
+}  
+function renderCalendar(){  
+let grid=document.getElementById("calendarGrid");  
+grid.innerHTML="";  
+for(let i=1;i<=30;i++){  
+let day=document.createElement("div");  
+day.className="calendar-day";  
+day.innerText=i;  
+day.onclick=function(){day.classList.toggle("marked");}  
+grid.appendChild(day);  
+}  
+}  
+function addDecision(){  
+let text=document.getElementById("decisionInput").value;  
+if(!text)return;  
+decisions.push(text);  
+localStorage.setItem("decisions",JSON.stringify(decisions));  
+renderDecisions();  
+document.getElementById("decisionInput").value="";  
+}  
+function renderDecisions(){  
+let list=document.getElementById("decisionList");  
+list.innerHTML="";  
+decisions.forEach(d=>{  
+let div=document.createElement("div");  
+div.className="card";  
+div.innerText=d;  
+list.appendChild(div);  
+});  
+}  
+renderObjects();  
+updateSelect();  
+renderFinance();  
+renderCalendar();  
+renderDecisions();  
+drawChart();  
+</script>  
+</body>  
 </html> 
  
