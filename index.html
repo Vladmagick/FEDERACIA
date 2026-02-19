@@ -176,18 +176,155 @@ html, body{
   touch-action:manipulation; 
 } 
  
+ 
+/* ===== HOME DASHBOARD UI ===== */ 
+.topbar{ 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  margin-bottom:14px; 
+} 
+.brand{display:flex;flex-direction:column;gap:4px} 
+.brand-title{font-size:22px;font-weight:800;letter-spacing:0.2px} 
+.brand-sub{font-size:12px;color:rgba(255,255,255,0.55)} 
+.pill{ 
+  padding:8px 12px; 
+  border-radius:999px; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.08); 
+  backdrop-filter:blur(20px); 
+  font-size:12px; 
+  color:rgba(255,255,255,0.75); 
+} 
+.hero{ 
+  border-radius:26px; 
+  padding:18px; 
+  background:rgba(255,255,255,0.06); 
+  border:1px solid rgba(255,255,255,0.07); 
+  box-shadow:0 18px 50px rgba(0,0,0,0.45); 
+} 
+.hero-row{ 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:flex-start; 
+  gap:12px; 
+} 
+.hero-title{font-size:13px;color:rgba(255,255,255,0.65)} 
+.hero-value{margin-top:6px;font-size:22px;font-weight:900} 
+.kpis{display:flex;gap:10px;margin-top:12px} 
+.kpi{ 
+  flex:1; 
+  padding:12px; 
+  border-radius:18px; 
+  background:rgba(255,255,255,0.05); 
+  border:1px solid rgba(255,255,255,0.06); 
+} 
+.kpi .k-label{font-size:12px;color:rgba(255,255,255,0.55)} 
+.kpi .k-val{margin-top:6px;font-size:14px;font-weight:800} 
+.grid3{ 
+  display:grid; 
+  grid-template-columns:repeat(3,1fr); 
+  gap:10px; 
+  margin-top:14px; 
+} 
+.mini-card{ 
+  padding:12px; 
+  border-radius:18px; 
+  background:rgba(255,255,255,0.05); 
+  border:1px solid rgba(255,255,255,0.06); 
+} 
+.mini-card .m-label{font-size:11px;color:rgba(255,255,255,0.55)} 
+.mini-card .m-val{margin-top:6px;font-size:16px;font-weight:900} 
+.quick-actions{display:flex;gap:10px;margin-top:14px} 
+.qa{ 
+  flex:1; 
+  padding:12px; 
+  border-radius:18px; 
+  background:rgba(255,255,255,0.07); 
+  border:1px solid rgba(255,255,255,0.08); 
+  text-align:center; 
+  font-size:12px; 
+  color:rgba(255,255,255,0.92); 
+  user-select:none; 
+  -webkit-tap-highlight-color: transparent; 
+} 
+.qa:active{transform:scale(0.97)} 
+.small-note{ 
+  margin-top:12px; 
+  font-size:12px; 
+  color:rgba(255,255,255,0.55); 
+  line-height:1.35; 
+} 
+ 
 </style>  
 </head>  
 <body>  
 <div class="app">  
-<div id="home" class="screen active">  
-<h1>ФЕДЕРАЦИЯ</h1>  
-<div class="card">  
-<div>Финансы месяца</div>  
-<canvas id="chart"></canvas>  
-<div id="financeSummary"></div>  
-</div>  
-</div>  
+<div id="home" class="screen active"> 
+ 
+  <div class="topbar"> 
+    <div class="brand"> 
+      <div class="brand-title">ФЕДЕРАЦИЯ</div> 
+      <div class="brand-sub">Executive Control • Личный контур</div> 
+    </div> 
+    <div class="pill" id="syncPill">● Онлайн</div> 
+  </div> 
+ 
+  <div class="hero"> 
+    <div class="hero-row"> 
+      <div> 
+        <div class="hero-title">Финансы — текущий месяц</div> 
+        <div class="hero-value" id="heroProfit">₽ 0</div> 
+        <div class="small-note" id="heroPercent">Нажми на диаграмму → покажу проценты</div> 
+      </div> 
+      <div style="width:170px;"> 
+        <canvas id="chart" style="height:160px;"></canvas> 
+      </div> 
+    </div> 
+ 
+    <div class="kpis"> 
+      <div class="kpi"> 
+        <div class="k-label">Доход</div> 
+        <div class="k-val green" id="kIncome">₽ 0</div> 
+      </div> 
+      <div class="kpi"> 
+        <div class="k-label">Расход</div> 
+        <div class="k-val red" id="kExpense">₽ 0</div> 
+      </div> 
+      <div class="kpi"> 
+        <div class="k-label">Маржа</div> 
+        <div class="k-val orange" id="kMargin">0%</div> 
+      </div> 
+    </div> 
+  </div> 
+ 
+  <div class="grid3"> 
+    <div class="mini-card"> 
+      <div class="m-label">В работе</div> 
+      <div class="m-val orange" id="mWork">0</div> 
+    </div> 
+    <div class="mini-card"> 
+      <div class="m-label">Завершено</div> 
+      <div class="m-val green" id="mDone">0</div> 
+    </div> 
+    <div class="mini-card"> 
+      <div class="m-label">Задержки</div> 
+      <div class="m-val red" id="mDelay">0</div> 
+    </div> 
+  </div> 
+ 
+  <div class="quick-actions"> 
+    <div class="qa" onclick="openQuick('expense')">+ Расход</div> 
+    <div class="qa" onclick="openQuick('object')">+ Объект</div> 
+    <div class="qa" onclick="openQuick('decision')">+ Решение</div> 
+  </div> 
+ 
+  <div class="small-note"> 
+    Главная показывает только сводку. Детали — во вкладках Финансы / Объекты / Календарь / Решения. 
+  </div> 
+ 
+</div> 
+ 
 <div id="finance" class="screen">  
 <h1>Финансы</h1>  
 <div class="card">  
@@ -278,7 +415,39 @@ let text=document.getElementById("objectInput").value;
 if(!text)return;  
 objects.push(text);  
 localStorage.setItem("objects",JSON.stringify(objects));  
-renderObjects(); updateSelect();  
+ 
+function recalcHome(){ 
+  // objects summary (пока по количеству) 
+  const mWork = document.getElementById("mWork"); 
+  const mDone = document.getElementById("mDone"); 
+  const mDelay = document.getElementById("mDelay"); 
+  if(mWork) mWork.textContent = objects.length; 
+  if(mDone) mDone.textContent = 0; 
+  if(mDelay) mDelay.textContent = 0; 
+ 
+  drawChart(); 
+} 
+ 
+function openQuick(type){ 
+  const items = document.querySelectorAll(".dock-item"); 
+  if(type === "expense"){ 
+    switchTab("finance", items[1]); 
+    const exp = document.getElementById("expenseInput"); 
+    exp?.focus?.(); 
+  } 
+  if(type === "object"){ 
+    switchTab("objects", items[2]); 
+    const oi = document.getElementById("objectInput"); 
+    oi?.focus?.(); 
+  } 
+  if(type === "decision"){ 
+    switchTab("decisions", items[4]); 
+    const di = document.getElementById("decisionInput"); 
+    di?.focus?.(); 
+  } 
+} 
+ 
+renderObjects(); updateSelect(); recalcHome();  
 document.getElementById("objectInput").value="";  
 }  
 function renderObjects(){  
@@ -305,7 +474,7 @@ let income=parseFloat(document.getElementById("incomeInput").value)||0;
 let expense=parseFloat(document.getElementById("expenseInput").value)||0;  
 finances.push({obj,income,expense});  
 localStorage.setItem("finances",JSON.stringify(finances));  
-renderFinance(); drawChart();  
+renderFinance(); drawChart(); recalcHome();  
 }  
 function renderFinance(){  
 let list=document.getElementById("financeList");  
@@ -319,23 +488,53 @@ list.appendChild(div);
 }  
 function drawChart(){  
 const canvas=document.getElementById("chart");  
+if(!canvas) return; 
 const ctx=canvas.getContext("2d");  
 canvas.width=350; canvas.height=200;  
-let totalIncome=finances.reduce((a,b)=>a+b.income,0);  
-let totalExpense=finances.reduce((a,b)=>a+b.expense,0);  
+ 
+let totalIncome=finances.reduce((a,b)=>a+(Number(b.income)||0),0);  
+let totalExpense=finances.reduce((a,b)=>a+(Number(b.expense)||0),0);  
+let profit=totalIncome-totalExpense; 
+ 
 let percent=(totalExpense/(totalIncome||1))*180;  
 ctx.clearRect(0,0,canvas.width,canvas.height);  
+ 
+// expense (red) 
 ctx.beginPath();  
 ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180));  
 ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke();  
+ 
+// income remainder (green) 
 ctx.beginPath();  
 ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI);  
 ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke();  
+ 
+// Update Home KPIs 
+const fmt = (n)=>("₽ "+Math.round(n).toLocaleString("ru-RU")); 
+const kIncome = document.getElementById("kIncome"); 
+const kExpense = document.getElementById("kExpense"); 
+const heroProfit = document.getElementById("heroProfit"); 
+const kMargin = document.getElementById("kMargin"); 
+ 
+if(kIncome) kIncome.textContent = fmt(totalIncome); 
+if(kExpense) kExpense.textContent = fmt(totalExpense); 
+if(heroProfit) heroProfit.textContent = fmt(profit); 
+if(kMargin){ 
+  const margin = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
+  kMargin.textContent = margin + "%"; 
+} 
+ 
+// Click -> show percentages 
 canvas.onclick=function(){  
-alert("Доход: "+totalIncome+" ₽\nРасход: "+totalExpense+" ₽");  
-}  
-document.getElementById("financeSummary").innerHTML=  
-"Доход: "+totalIncome+" ₽ | Расход: "+totalExpense+" ₽ | Прибыль: "+(totalIncome-totalExpense)+" ₽";  
+  const expP = totalIncome>0 ? Math.round((totalExpense/totalIncome)*100) : 0; 
+  const profP = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
+  const heroPercent = document.getElementById("heroPercent"); 
+  if(heroPercent){ 
+    heroPercent.textContent = "Расход: " + expP + "% • Прибыль: " + profP + "%"; 
+  }else{ 
+    alert("Доход: "+fmt(totalIncome)+"\nРасход: "+fmt(totalExpense)+"\nПрибыль: "+fmt(profit)); 
+  } 
+}; 
 }  
 function renderCalendar(){  
 let grid=document.getElementById("calendarGrid");  
@@ -353,7 +552,7 @@ let text=document.getElementById("decisionInput").value;
 if(!text)return;  
 decisions.push(text);  
 localStorage.setItem("decisions",JSON.stringify(decisions));  
-renderDecisions();  
+renderDecisions(); recalcHome();  
 document.getElementById("decisionInput").value="";  
 }  
 function renderDecisions(){  
@@ -370,8 +569,9 @@ renderObjects();
 updateSelect();  
 renderFinance();  
 renderCalendar();  
-renderDecisions();  
+renderDecisions(); recalcHome();  
 drawChart();  
+recalcHome(); 
 </script>  
 </body>  
 </html> 
