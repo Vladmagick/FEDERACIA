@@ -5,271 +5,263 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 <title>ФЕДЕРАЦИЯ</title> 
  
+<script src="https://telegram.org/js/telegram-web-app.js"></script> 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"> 
+ 
 <style> 
+*{margin:0;padding:0;box-sizing:border-box} 
 body{ 
-margin:0; 
-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto; 
-background:#0b0f17; 
-color:#eaf0ff; 
+    font-family:'Inter',sans-serif; 
+    background:linear-gradient(180deg,#0f172a,#0e1117); 
+    color:#fff; 
+    min-height:100vh; 
+    overflow-x:hidden; 
 } 
-header{ 
-padding:20px; 
-text-align:center; 
-font-size:22px; 
-font-weight:600; 
+.app{ 
+    max-width:430px; 
+    margin:0 auto; 
+    padding:20px 16px 100px; 
 } 
-.container{padding:20px;margin-bottom:90px;} 
+h1{ 
+    font-size:22px; 
+    font-weight:600; 
+    margin-bottom:20px; 
+} 
 .card{ 
-background:rgba(255,255,255,0.05); 
-padding:16px; 
-border-radius:18px; 
-margin-bottom:16px; 
-backdrop-filter:blur(10px); 
+    background:rgba(255,255,255,0.05); 
+    backdrop-filter:blur(25px); 
+    border-radius:22px; 
+    padding:18px; 
+    margin-bottom:16px; 
+    box-shadow:0 15px 40px rgba(0,0,0,0.4); 
+    transition:0.25s; 
 } 
-input,select,button,textarea{ 
-width:100%; 
-padding:10px; 
-border-radius:12px; 
-border:none; 
-margin-top:8px; 
-background:#111827; 
-color:white; 
+.card:active{transform:scale(0.97)} 
+.section-title{font-size:13px;opacity:0.7;margin-bottom:8px} 
+.balance{font-size:26px;font-weight:700;margin-top:5px} 
+ 
+canvas{width:100%;height:180px} 
+ 
+.status-row{ 
+    display:flex; 
+    justify-content:space-between; 
+    font-size:13px; 
+    margin-top:10px; 
 } 
-button{background:#2563eb;font-weight:600;cursor:pointer;} 
-canvas{display:block;margin:auto;cursor:pointer;} 
+.green{color:#00ff9d} 
+.orange{color:#ff9d00} 
+.red{color:#ff4d4d} 
+ 
+button{ 
+    background:rgba(255,255,255,0.08); 
+    border:none; 
+    border-radius:18px; 
+    padding:12px; 
+    color:#fff; 
+    width:100%; 
+    margin-top:12px; 
+    transition:0.2s; 
+} 
+button:active{transform:scale(0.96)} 
+ 
+.hidden{display:none} 
+ 
 .bottom-nav{ 
-position:fixed; 
-bottom:0;left:0;right:0; 
-background:#0f172a; 
-display:flex; 
-justify-content:space-around; 
-padding:14px 0; 
-border-top:1px solid rgba(255,255,255,0.1); 
+    position:fixed; 
+    bottom:0; 
+    left:0; 
+    right:0; 
+    max-width:430px; 
+    margin:0 auto; 
+    background:rgba(15,23,42,0.95); 
+    backdrop-filter:blur(20px); 
+    display:flex; 
+    justify-content:space-around; 
+    padding:14px 0; 
+    border-top:1px solid rgba(255,255,255,0.05); 
 } 
-.bottom-nav div{font-size:12px;text-align:center;cursor:pointer;} 
-.roadmap{display:flex;overflow-x:auto;gap:12px;margin-top:10px;} 
+.nav-item{ 
+    text-align:center; 
+    font-size:11px; 
+    opacity:0.6; 
+    transition:0.3s; 
+} 
+.nav-item.active{ 
+    opacity:1; 
+    color:#00ff9d; 
+} 
+ 
+.roadmap{ 
+    display:flex; 
+    overflow-x:auto; 
+    gap:12px; 
+} 
 .stage{ 
-min-width:160px; 
-padding:12px; 
-border-radius:16px; 
-background:rgba(255,255,255,0.07); 
-font-size:12px; 
+    min-width:160px; 
+    background:rgba(255,255,255,0.06); 
+    padding:14px; 
+    border-radius:18px; 
+    font-size:12px; 
 } 
-.stage.done{background:#14532d;} 
-.stage.active{background:#1e3a8a;} 
-.hidden{display:none;} 
-.small{font-size:12px;color:#9ca3af;} 
-h3{margin-top:0;} 
+ 
+input,textarea{ 
+    width:100%; 
+    margin-top:8px; 
+    padding:10px; 
+    border-radius:12px; 
+    border:none; 
+    background:rgba(255,255,255,0.06); 
+    color:#fff; 
+} 
+textarea{resize:none;height:80px} 
 </style> 
 </head> 
  
 <body> 
+<div class="app"> 
  
-<header>ФЕДЕРАЦИЯ</header> 
- 
-<div class="container"> 
- 
+<!-- ГЛАВНАЯ --> 
 <div id="home"> 
+<h1>ФЕДЕРАЦИЯ</h1> 
  
 <div class="card"> 
-<h3>Этот месяц</h3> 
-<canvas id="chart" width="300" height="180"></canvas> 
-<p id="summary"></p> 
+<div class="section-title">Финансы — этот месяц</div> 
+<canvas id="financeChart"></canvas> 
+<div class="status-row"> 
+<span class="green">Доход</span> 
+<span class="red">Расход</span> 
+<span class="orange">Прибыль</span> 
+</div> 
 </div> 
  
 <div class="card"> 
-<h3>Краткая сводка</h3> 
-<p id="stats"></p> 
-</div> 
- 
-</div> 
- 
-<div id="objects" class="hidden"> 
-<div class="card"> 
-<h3>Объекты</h3> 
-<input id="objectName" placeholder="Название объекта"> 
-<input id="objectProfit" type="number" placeholder="Плановая прибыль"> 
-<button onclick="addObject()">Добавить объект</button> 
-<ul id="objectList"></ul> 
+<div class="section-title">Краткая сводка</div> 
+<div>Объекты в работе: <span class="orange">3</span></div> 
+<div>Завершено: <span class="green">5</span></div> 
+<div>Задержки: <span class="red">1</span></div> 
 </div> 
 </div> 
  
+<!-- ФИНАНСЫ --> 
 <div id="finance" class="hidden"> 
+<h1>Финансы</h1> 
 <div class="card"> 
-<h3>Добавить операцию</h3> 
-<select id="type"> 
-<option value="income">Доход</option> 
-<option value="expense">Расход</option> 
-</select> 
-<input type="number" id="amount" placeholder="Сумма"> 
-<button onclick="addTransaction()">Добавить</button> 
+<input type="number" id="income" placeholder="Доход"> 
+<input type="number" id="expense" placeholder="Расход"> 
+<button onclick="saveFinance()">Сохранить</button> 
 </div> 
 </div> 
  
-<div id="calendar" class="hidden"> 
+<!-- ОБЪЕКТЫ --> 
+<div id="objects" class="hidden"> 
+<h1>Объекты</h1> 
 <div class="card"> 
-<h3>Календарь</h3> 
-<input type="date" id="eventDate"> 
-<input type="text" id="eventText" placeholder="Событие"> 
-<button onclick="addEvent()">Добавить</button> 
-<ul id="eventList"></ul> 
+<textarea id="objectText" placeholder="Добавить объект..."></textarea> 
+<button onclick="addObject()">Добавить</button> 
+</div> 
+<div id="objectList"></div> 
+</div> 
+ 
+<!-- ROADMAP --> 
+<div id="roadmap" class="hidden"> 
+<h1>Дорожная карта</h1> 
+<div class="roadmap"> 
+<div class="stage">Выход на объект</div> 
+<div class="stage">Переговоры</div> 
+<div class="stage">Согласование</div> 
+<div class="stage">Договор подписан</div> 
+<div class="stage">Начало работ</div> 
+<div class="stage">КС-2 / КС-3</div> 
+<div class="stage">Сдача объекта</div> 
 </div> 
 </div> 
  
-<div id="more" class="hidden"> 
+<!-- ПРОФИЛЬ --> 
+<div id="profile" class="hidden"> 
+<h1>Профиль</h1> 
 <div class="card"> 
-<h3>Решение / Заметка</h3> 
-<textarea id="decisionText" placeholder="Текст решения"></textarea> 
-<button onclick="addDecision()">Сохранить</button> 
-<ul id="decisionList"></ul> 
+<div id="userInfo">Загрузка...</div> 
 </div> 
 </div> 
  
 </div> 
  
 <div class="bottom-nav"> 
-<div onclick="showTab('home')">Главная</div> 
-<div onclick="showTab('objects')">Объекты</div> 
-<div onclick="showTab('calendar')">Календарь</div> 
-<div onclick="showTab('finance')">Финансы</div> 
-<div onclick="showTab('more')">Ещё</div> 
+<div class="nav-item active" onclick="switchTab('home',this)">Главная</div> 
+<div class="nav-item" onclick="switchTab('finance',this)">Финансы</div> 
+<div class="nav-item" onclick="switchTab('objects',this)">Объекты</div> 
+<div class="nav-item" onclick="switchTab('roadmap',this)">Roadmap</div> 
+<div class="nav-item" onclick="switchTab('profile',this)">Профиль</div> 
 </div> 
  
 <script> 
+// Telegram Init 
+const tg = window.Telegram.WebApp; 
+tg.expand(); 
+tg.ready(); 
  
-let transactions=JSON.parse(localStorage.getItem("transactions"))||[]; 
-let objects=JSON.parse(localStorage.getItem("objects"))||[]; 
-let events=JSON.parse(localStorage.getItem("events"))||[]; 
-let decisions=JSON.parse(localStorage.getItem("decisions"))||[]; 
- 
-function saveAll(){ 
-localStorage.setItem("transactions",JSON.stringify(transactions)); 
-localStorage.setItem("objects",JSON.stringify(objects)); 
-localStorage.setItem("events",JSON.stringify(events)); 
-localStorage.setItem("decisions",JSON.stringify(decisions)); 
+const user = tg.initDataUnsafe?.user; 
+if(user){ 
+document.getElementById("userInfo").innerHTML = 
+"ID: "+user.id+"<br>"+user.first_name; 
 } 
  
-function showTab(id){ 
-['home','objects','finance','calendar','more'].forEach(t=>{ 
-document.getElementById(t).classList.add('hidden'); 
-}); 
-document.getElementById(id).classList.remove('hidden'); 
+// Navigation 
+function switchTab(id,el){ 
+document.querySelectorAll(".app > div").forEach(d=>d.classList.add("hidden")); 
+document.getElementById(id).classList.remove("hidden"); 
+document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active")); 
+el.classList.add("active"); 
 } 
  
-function addTransaction(){ 
-let type=document.getElementById("type").value; 
-let amount=parseFloat(document.getElementById("amount").value); 
-if(!amount)return; 
-transactions.push({type,amount}); 
-saveAll(); 
+// Finance Storage 
+function saveFinance(){ 
+localStorage.setItem("income",document.getElementById("income").value); 
+localStorage.setItem("expense",document.getElementById("expense").value); 
 drawChart(); 
-updateStats(); 
 } 
  
+// Objects 
 function addObject(){ 
-let name=document.getElementById("objectName").value; 
-let profit=parseFloat(document.getElementById("objectProfit").value)||0; 
-if(!name)return; 
-objects.push({name,profit}); 
-saveAll(); 
-renderObjects(); 
-updateStats(); 
-} 
- 
-function addEvent(){ 
-let date=document.getElementById("eventDate").value; 
-let text=document.getElementById("eventText").value; 
-if(!date||!text)return; 
-events.push({date,text}); 
-saveAll(); 
-renderEvents(); 
-} 
- 
-function addDecision(){ 
-let text=document.getElementById("decisionText").value; 
+let text=document.getElementById("objectText").value; 
 if(!text)return; 
-decisions.push(text); 
-saveAll(); 
-renderDecisions(); 
-} 
- 
-function renderObjects(){ 
 let list=document.getElementById("objectList"); 
-list.innerHTML=""; 
-objects.forEach(o=>{ 
-let li=document.createElement("li"); 
-li.innerHTML=o.name+" — "+o.profit+" ₽"; 
-list.appendChild(li); 
-}); 
+let div=document.createElement("div"); 
+div.className="card"; 
+div.innerText=text; 
+list.appendChild(div); 
+document.getElementById("objectText").value=""; 
 } 
  
-function renderEvents(){ 
-let list=document.getElementById("eventList"); 
-list.innerHTML=""; 
-events.forEach(e=>{ 
-let li=document.createElement("li"); 
-li.innerHTML=e.date+" — "+e.text; 
-list.appendChild(li); 
-}); 
-} 
- 
-function renderDecisions(){ 
-let list=document.getElementById("decisionList"); 
-list.innerHTML=""; 
-decisions.forEach(d=>{ 
-let li=document.createElement("li"); 
-li.innerHTML=d; 
-list.appendChild(li); 
-}); 
-} 
- 
+// Finance Chart 
 function drawChart(){ 
-let canvas=document.getElementById("chart"); 
-let ctx=canvas.getContext("2d"); 
-ctx.clearRect(0,0,300,180); 
+const canvas=document.getElementById("financeChart"); 
+const ctx=canvas.getContext("2d"); 
+canvas.width=350; 
+canvas.height=180; 
  
-let income=transactions.filter(t=>t.type==="income").reduce((a,b)=>a+b.amount,0); 
-let expense=transactions.filter(t=>t.type==="expense").reduce((a,b)=>a+b.amount,0); 
+let income=parseFloat(localStorage.getItem("income"))||1000000; 
+let expense=parseFloat(localStorage.getItem("expense"))||600000; 
 let profit=income-expense; 
  
-let total=income+expense||1; 
-let incomeAngle=(income/total)*Math.PI; 
+let total=income; 
+let percent=(expense/total)*180; 
  
-ctx.lineWidth=22; 
+ctx.clearRect(0,0,canvas.width,canvas.height); 
  
 ctx.beginPath(); 
-ctx.arc(150,150,90,Math.PI,Math.PI+incomeAngle); 
-ctx.strokeStyle="#22c55e"; 
+ctx.arc(175,170,150,Math.PI,Math.PI+(percent*Math.PI/180)); 
+ctx.lineWidth=20; 
+ctx.strokeStyle="#ff4d4d"; 
 ctx.stroke(); 
  
 ctx.beginPath(); 
-ctx.arc(150,150,90,Math.PI+incomeAngle,Math.PI*2); 
-ctx.strokeStyle="#ef4444"; 
+ctx.arc(175,170,150,Math.PI+(percent*Math.PI/180),2*Math.PI); 
+ctx.lineWidth=20; 
+ctx.strokeStyle="#00ff9d"; 
 ctx.stroke(); 
- 
-canvas.onclick=function(){ 
-alert("Доход: "+Math.round(income/total*100)+"%\nРасход: "+Math.round(expense/total*100)+"%"); 
 } 
- 
-document.getElementById("summary").innerHTML="Доход: "+income+" ₽ | Расход: "+expense+" ₽ | Прибыль: "+profit+" ₽"; 
-} 
- 
-function updateStats(){ 
-let active=objects.length; 
-let income=transactions.filter(t=>t.type==="income").reduce((a,b)=>a+b.amount,0); 
-let expense=transactions.filter(t=>t.type==="expense").reduce((a,b)=>a+b.amount,0); 
-document.getElementById("stats").innerHTML= 
-"Активных объектов: "+active+"<br>"+ 
-"Доход всего: "+income+" ₽<br>"+ 
-"Расход всего: "+expense+" ₽"; 
-} 
- 
-renderObjects(); 
-renderEvents(); 
-renderDecisions(); 
 drawChart(); 
-updateStats(); 
- 
 </script> 
  
 </body> 
