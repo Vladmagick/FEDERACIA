@@ -1,2196 +1,2162 @@
-<!DOCTYPE html>  
-
-<html lang="ru">  
-
-<head>  
-
-<meta charset="UTF-8">  
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-
-<title>ФЕДЕРАЦИЯ</title>  
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>  
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">  
-
-<style>  /* ===== Calendar v2 ===== */
-.calendar-card { padding: 16px; }
-
-.cal-top{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; margin-bottom:12px;
-}
-
-.cal-nav{
-  width:44px; height:44px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.06);
-  color:#fff; font-size:22px;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  transition: transform .18s ease, background .18s ease;
-}
-.cal-nav:active{ transform: scale(.96); background: rgba(255,255,255,.09); }
-
-.cal-title{ text-align:center; line-height:1.1; }
-.cal-month{ font-weight:700; font-size:16px; }
-.cal-year{ opacity:.7; font-size:12px; margin-top:2px; }
-
-.cal-dow{
-  display:grid; grid-template-columns: repeat(7, 1fr);
-  gap:8px;
-  opacity:.7;
-  font-size:12px;
-  margin-bottom:10px;
-}
-.cal-dow > div{ text-align:center; }
-
-.cal-grid{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap:10px;
-}
-
-.cal-day{
-  height:44px;
-  border-radius:16px;
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid rgba(255,255,255,.06);
-  background: rgba(255,255,255,.05);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  position:relative;
-  user-select:none;
-  -webkit-user-select:none;
-  transition: transform .18s ease, background .18s ease, border-color .18s ease;
-}
-.cal-day:active{ transform: scale(.97); }
-.cal-day.muted{ opacity:.35; }
-
-.cal-day.done{
-  border-color: rgba(0,255,170,.35);
-  background: rgba(0,255,170,.10);
-}
-
-.cal-day.has-note::after{
-  content:"";
-  position:absolute;
-  bottom:7px; width:6px; height:6px;
-  border-radius:50%;
-  background: rgba(255, 196, 0, .95);
-  box-shadow: 0 0 12px rgba(255,196,0,.35);
-}
-
-/* Note modal */
-.modal{ position:fixed; inset:0; z-index:9999; }
-.modal.hidden{ display:none; }
-.modal-backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.45); }
-.modal-sheet{
-  position:absolute; left:12px; right:12px; bottom:12px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(20,24,34,.75);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  padding:14px;
-}
-.modal-head{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:10px; margin-bottom:10px;
-}
-.modal-title{ font-weight:700; }
-
-.input.cal-note{
-  width:100%;
-  min-height:110px;
-  resize:none;
-  padding:12px 12px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.06);
-  color:#fff;
-  outline:none;
-  margin: 6px 0 12px;
-}
-.modal-actions{ display:flex; gap:10px; }
-.btn{ flex:1; height:44px; border-radius:16px; border:1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.06); color:#fff; }
-
-*{margin:0;padding:0;box-sizing:border-box}  
-
-body{  
-
-font-family:'Inter',sans-serif;  
-
-background:linear-gradient(180deg,#0b0f17,#0f172a);  
-
-color:#fff;  
-
-min-height:100vh;  
-
-overflow-x:hidden;  
-
-}  
-
-.app{  
-
-max-width:430px;  
-
-margin:0 auto;  
-
-padding:20px 16px 110px;  
-
-}  
-
-h1{font-size:22px;font-weight:600;margin-bottom:16px}  
-
-.card{  
-
-background:rgba(255,255,255,0.06);  
-
-backdrop-filter:blur(25px);  
-
-border-radius:24px;  
-
-padding:18px;  
-
-margin-bottom:16px;  
-
-box-shadow:0 15px 40px rgba(0,0,0,0.5);  
-
-transition:0.25s ease;  
-
-}  
-
-.card:active{transform:scale(0.97)}  
-
-input,textarea,select{  
-
-width:100%;  
-
-margin-top:10px;  
-
-padding:12px;  
-
-border-radius:16px;  
-
-border:none;  
-
-background:rgba(255,255,255,0.08);  
-
-color:#fff;  
-
-}  
-
-button{  
-
-margin-top:12px;  
-
-padding:12px;  
-
-border-radius:18px;  
-
-border:none;  
-
-background:rgba(255,255,255,0.1);  
-
-color:#fff;  
-
-transition:0.2s;  
-
-}  
-
-button:active{transform:scale(0.96)}  
-
-canvas{width:100%;height:200px;cursor:pointer}  
-
-.green{color:#00ff9d}  
-
-.orange{color:#ff9d00}  
-
-.red{color:#ff4d4d}  
-
-.hidden{display:none}  
-
-/* ===== TELEGRAM DOCK (volume glass) ===== */  
-
-.bottom-dock{  
-
-position:fixed;  
-
-left:50%;  
-
-transform:translateX(-50%);  
-
-bottom:18px;  
-
-width:92%;  
-
-max-width:430px;  
-
-height:76px;  
-
-border-radius:38px;  
-
-background:rgba(20,24,32,0.62);  
-
-backdrop-filter:blur(30px);  
-
-display:flex;  
-
-justify-content:space-around;  
-
-align-items:center;  
-
-box-shadow:  
-
-0 18px 50px rgba(0,0,0,0.55),  
-
-inset 0 1px 0 rgba(255,255,255,0.10),  
-
-inset 0 -1px 0 rgba(0,0,0,0.35);  
-
-border:1px solid rgba(255,255,255,0.07);  
-
-z-index:999;  
-
-}  
-
-.dock-item{  
-
-width:72px;  
-
-height:60px;  
-
-border-radius:22px;  
-
-display:flex;  
-
-flex-direction:column;  
-
-align-items:center;  
-
-justify-content:center;  
-
-color:rgba(255,255,255,0.58);  
-
-font-size:11px;  
-
-gap:3px;  
-
-transition: transform .35s cubic-bezier(.2,.8,.2,1),  
-
-color .25s ease,  
-
-background .25s ease;  
-
-position:relative;  
-
-user-select:none;  
-
--webkit-tap-highlight-color: transparent;  
-
-}  
-
-.dock-item .dock-icon{  
-
-font-size:20px;  
-
-line-height:20px;  
-
-transition: transform .35s cubic-bezier(.2,.8,.2,1);  
-
-}  
-
-.dock-item.active{  
-
-color:#00ff9d;  
-
-transform: translateY(-7px);  
-
-}  
-
-.dock-item.active::before{  
-
-content:"";  
-
-position:absolute;  
-
-inset:6px;  
-
-border-radius:18px;  
-
-background:rgba(0,255,157,0.10);  
-
-box-shadow:0 0 26px rgba(0,255,157,0.38);  
-
-z-index:-1;  
-
-}  
-
-.dock-item:active{  
-
-transform: translateY(-6px) scale(0.96);  
-
-}  
-
-.dock-item:active .dock-icon{  
-
-transform: scale(0.90);  
-
-}  
-
-/* ===== Screen animation base ===== */  
-
-.app > div{  
-
-transition: opacity .30s ease, transform .30s ease;  
-
-will-change: opacity, transform;  
-
-}  
-
-.calendar-day{  
-
-display:inline-block;  
-
-width:42px;height:42px;  
-
-line-height:42px;  
-
-text-align:center;  
-
-margin:4px;  
-
-border-radius:12px;  
-
-background:rgba(255,255,255,0.06);  
-
-font-size:13px;  
-
-}  
-
-.calendar-day.marked{background:#00ff9d;color:#000}  
-
  
 
-/* ===== STATIC SCREENS MODE (NO JUMP) ===== */ 
-
-html, body{ 
-
-  height:100%; 
-
-  overflow:hidden;              /* убираем прыжки iOS/WebView */ 
-
-  overscroll-behavior:none; 
-
+<!DOCTYPE html> 
+ 
+<html lang="ru"> 
+ 
+<head> 
+ 
+<meta charset="UTF-8"> 
+ 
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+ 
+<title>ФЕДЕРАЦИЯ</title> 
+ 
+<script src="https://telegram.org/js/telegram-web-app.js"></script> 
+ 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"> 
+ 
+<style> /* ===== Calendar v2 ===== */ 
+.calendar-card { padding: 16px; } 
+ 
+.cal-top{ 
+display:flex; align-items:center; justify-content:space-between; 
+gap:12px; margin-bottom:12px; 
 } 
-
  
-
+.cal-nav{ 
+width:44px; height:44px; 
+border-radius:14px; 
+border:1px solid rgba(255,255,255,.08); 
+background: rgba(255,255,255,.06); 
+color:#fff; font-size:22px; 
+backdrop-filter: blur(18px); 
+-webkit-backdrop-filter: blur(18px); 
+transition: transform .18s ease, background .18s ease; 
+} 
+.cal-nav:active{ transform: scale(.96); background: rgba(255,255,255,.09); } 
+ 
+.cal-title{ text-align:center; line-height:1.1; } 
+.cal-month{ font-weight:700; font-size:16px; } 
+.cal-year{ opacity:.7; font-size:12px; margin-top:2px; } 
+ 
+.cal-dow{ 
+display:grid; grid-template-columns: repeat(7, 1fr); 
+gap:8px; 
+opacity:.7; 
+font-size:12px; 
+margin-bottom:10px; 
+} 
+.cal-dow > div{ text-align:center; } 
+ 
+.cal-grid{ 
+display:grid; 
+grid-template-columns: repeat(7, 1fr); 
+gap:10px; 
+} 
+ 
+.cal-day{ 
+height:44px; 
+border-radius:16px; 
+display:flex; align-items:center; justify-content:center; 
+border:1px solid rgba(255,255,255,.06); 
+background: rgba(255,255,255,.05); 
+backdrop-filter: blur(18px); 
+-webkit-backdrop-filter: blur(18px); 
+position:relative; 
+user-select:none; 
+-webkit-user-select:none; 
+transition: transform .18s ease, background .18s ease, border-color .18s ease; 
+} 
+.cal-day:active{ transform: scale(.97); } 
+.cal-day.muted{ opacity:.35; } 
+ 
+.cal-day.done{ 
+border-color: rgba(0,255,170,.35); 
+background: rgba(0,255,170,.10); 
+} 
+ 
+.cal-day.has-note::after{ 
+content:""; 
+position:absolute; 
+bottom:7px; width:6px; height:6px; 
+border-radius:50%; 
+background: rgba(255, 196, 0, .95); 
+box-shadow: 0 0 12px rgba(255,196,0,.35); 
+} 
+ 
+/* Note modal */ 
+.modal{ position:fixed; inset:0; z-index:9999; } 
+.modal.hidden{ display:none; } 
+.modal-backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.45); } 
+.modal-sheet{ 
+position:absolute; left:12px; right:12px; bottom:12px; 
+border-radius:22px; 
+border:1px solid rgba(255,255,255,.10); 
+background: rgba(20,24,34,.75); 
+backdrop-filter: blur(22px); 
+-webkit-backdrop-filter: blur(22px); 
+padding:14px; 
+} 
+.modal-head{ 
+display:flex; align-items:center; justify-content:space-between; 
+gap:10px; margin-bottom:10px; 
+} 
+.modal-title{ font-weight:700; } 
+ 
+.input.cal-note{ 
+width:100%; 
+min-height:110px; 
+resize:none; 
+padding:12px 12px; 
+border-radius:18px; 
+border:1px solid rgba(255,255,255,.08); 
+background: rgba(255,255,255,.06); 
+color:#fff; 
+outline:none; 
+margin: 6px 0 12px; 
+} 
+.modal-actions{ display:flex; gap:10px; } 
+.btn{ flex:1; height:44px; border-radius:16px; border:1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.06); color:#fff; } 
+.btn.primary{ 
+background:rgba(0,255,157,0.16); 
+border:1px solid rgba(0,255,157,0.22); 
+font-weight:900; 
+} 
+ 
+*{margin:0;padding:0;box-sizing:border-box} 
+ 
+body{ 
+ 
+font-family:'Inter',sans-serif; 
+ 
+background:linear-gradient(180deg,#0b0f17,#0f172a); 
+ 
+color:#fff; 
+ 
+min-height:100vh; 
+ 
+overflow-x:hidden; 
+ 
+} 
+ 
 .app{ 
-
-  position:relative; 
-
-  height:100dvh;                /* стабильная высота */ 
-
-  overflow:hidden;              /* скролл только внутри экранов */ 
-
-  max-width:430px; 
-
-  margin:0 auto; 
-
-  padding:0;                    /* padding переедет в .screen */ 
-
-} 
-
  
-
-/* Каждый экран — отдельная "страница" */ 
-
-.screen{ 
-
-  position:absolute; 
-
-  inset:0; 
-
-  padding:20px 16px; 
-
-  padding-bottom:calc(130px + env(safe-area-inset-bottom)); 
-
-  overflow-y:auto; 
-
-  -webkit-overflow-scrolling:touch; 
-
-  display:none; 
-
-} 
-
+max-width:430px; 
  
-
-.screen.active{ 
-
-  display:block; 
-
-} 
-
+margin:0 auto; 
  
-
-/* док учитывает safe-area */ 
-
+padding:20px 16px 110px; 
+ 
+} 
+ 
+h1{font-size:22px;font-weight:600;margin-bottom:16px} 
+ 
+.card{ 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+backdrop-filter:blur(25px); 
+ 
+border-radius:24px; 
+ 
+padding:18px; 
+ 
+margin-bottom:16px; 
+ 
+box-shadow:0 15px 40px rgba(0,0,0,0.5); 
+ 
+transition:0.25s ease; 
+ 
+} 
+ 
+.card:active{transform:scale(0.97)} 
+ 
+input,textarea,select{ 
+ 
+width:100%; 
+ 
+margin-top:10px; 
+ 
+padding:12px; 
+ 
+border-radius:16px; 
+ 
+border:none; 
+ 
+background:rgba(255,255,255,0.08); 
+ 
+color:#fff; 
+ 
+} 
+ 
+button{ 
+ 
+margin-top:12px; 
+ 
+padding:12px; 
+ 
+border-radius:18px; 
+ 
+border:none; 
+ 
+background:rgba(255,255,255,0.1); 
+ 
+color:#fff; 
+ 
+transition:0.2s; 
+ 
+} 
+ 
+button:active{transform:scale(0.96)} 
+ 
+canvas{width:100%;height:200px;cursor:pointer} 
+ 
+.green{color:#00ff9d} 
+ 
+.orange{color:#ff9d00} 
+ 
+.red{color:#ff4d4d} 
+ 
+.hidden{display:none} 
+ 
+/* ===== TELEGRAM DOCK (volume glass) ===== */ 
+ 
 .bottom-dock{ 
-
-  bottom:calc(18px + env(safe-area-inset-bottom)); 
-
-} 
-
  
-
+position:fixed; 
+ 
+left:50%; 
+ 
+transform:translateX(-50%); 
+ 
+bottom:18px; 
+ 
+width:92%; 
+ 
+max-width:430px; 
+ 
+height:76px; 
+ 
+border-radius:38px; 
+ 
+background:rgba(20,24,32,0.62); 
+ 
+backdrop-filter:blur(30px); 
+ 
+display:flex; 
+ 
+justify-content:space-around; 
+ 
+align-items:center; 
+ 
+box-shadow: 
+ 
+0 18px 50px rgba(0,0,0,0.55), 
+ 
+inset 0 1px 0 rgba(255,255,255,0.10), 
+ 
+inset 0 -1px 0 rgba(0,0,0,0.35); 
+ 
+border:1px solid rgba(255,255,255,0.07); 
+ 
+z-index:999; 
+ 
+} 
+ 
 .dock-item{ 
-
-  touch-action:manipulation; 
-
+ 
+width:72px; 
+ 
+height:60px; 
+ 
+border-radius:22px; 
+ 
+display:flex; 
+ 
+flex-direction:column; 
+ 
+align-items:center; 
+ 
+justify-content:center; 
+ 
+color:rgba(255,255,255,0.58); 
+ 
+font-size:11px; 
+ 
+gap:3px; 
+ 
+transition: transform .35s cubic-bezier(.2,.8,.2,1), 
+ 
+color .25s ease, 
+ 
+background .25s ease; 
+ 
+position:relative; 
+ 
+user-select:none; 
+ 
+-webkit-tap-highlight-color: transparent; 
+ 
 } 
-
  
-
+.dock-item .dock-icon{ 
  
-
+font-size:20px; 
+ 
+line-height:20px; 
+ 
+transition: transform .35s cubic-bezier(.2,.8,.2,1); 
+ 
+} 
+ 
+.dock-item.active{ 
+ 
+color:#00ff9d; 
+ 
+transform: translateY(-7px); 
+ 
+} 
+ 
+.dock-item.active::before{ 
+ 
+content:""; 
+ 
+position:absolute; 
+ 
+inset:6px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(0,255,157,0.10); 
+ 
+box-shadow:0 0 26px rgba(0,255,157,0.38); 
+ 
+z-index:-1; 
+ 
+} 
+ 
+.dock-item:active{ 
+ 
+transform: translateY(-6px) scale(0.96); 
+ 
+} 
+ 
+.dock-item:active .dock-icon{ 
+ 
+transform: scale(0.90); 
+ 
+} 
+ 
+/* ===== Screen animation base ===== */ 
+ 
+.app > div{ 
+ 
+transition: opacity .30s ease, transform .30s ease; 
+ 
+will-change: opacity, transform; 
+ 
+} 
+ 
+.calendar-day{ 
+ 
+display:inline-block; 
+ 
+width:42px;height:42px; 
+ 
+line-height:42px; 
+ 
+text-align:center; 
+ 
+margin:4px; 
+ 
+border-radius:12px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+font-size:13px; 
+ 
+} 
+ 
+.calendar-day.marked{background:#00ff9d;color:#000} 
+ 
+ 
+/* ===== STATIC SCREENS MODE (NO JUMP) ===== */ 
+ 
+html, body{ 
+ 
+height:100%; 
+ 
+overflow:hidden; /* убираем прыжки iOS/WebView */ 
+ 
+overscroll-behavior:none; 
+ 
+} 
+ 
+ 
+.app{ 
+ 
+position:relative; 
+ 
+height:100dvh; /* стабильная высота */ 
+ 
+overflow:hidden; /* скролл только внутри экранов */ 
+ 
+max-width:430px; 
+ 
+margin:0 auto; 
+ 
+padding:0; /* padding переедет в .screen */ 
+ 
+} 
+ 
+ 
+/* Каждый экран — отдельная "страница" */ 
+ 
+.screen{ 
+ 
+position:absolute; 
+ 
+inset:0; 
+ 
+padding:20px 16px; 
+ 
+padding-bottom:calc(130px + env(safe-area-inset-bottom)); 
+ 
+overflow-y:auto; 
+ 
+-webkit-overflow-scrolling:touch; 
+ 
+display:none; 
+ 
+} 
+ 
+ 
+.screen.active{ 
+ 
+display:block; 
+ 
+} 
+ 
+ 
+/* док учитывает safe-area */ 
+ 
+.bottom-dock{ 
+ 
+bottom:calc(18px + env(safe-area-inset-bottom)); 
+ 
+} 
+ 
+ 
+.dock-item{ 
+ 
+touch-action:manipulation; 
+ 
+} 
+ 
+ 
+ 
 /* ===== HOME DASHBOARD UI ===== */ 
-
+ 
 .topbar{ 
-
-  margin-top:6px; 
-
-  display:flex; 
-
-  align-items:center; 
-
-  justify-content:space-between; 
-
-  margin-bottom:14px; 
-
+ 
+margin-top:6px; 
+ 
+display:flex; 
+ 
+align-items:center; 
+ 
+justify-content:space-between; 
+ 
+margin-bottom:14px; 
+ 
 } 
-
+ 
 .brand{display:flex;flex-direction:column;gap:4px} 
-
+ 
 .brand-title{font-size:22px;font-weight:800;letter-spacing:0.2px} 
-
+ 
 .brand-sub{font-size:12px;color:rgba(255,255,255,0.55)} 
-
+ 
 .pill{ 
-
-  padding:8px 12px; 
-
-  border-radius:999px; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.08); 
-
-  backdrop-filter:blur(20px); 
-
-  font-size:12px; 
-
-  color:rgba(255,255,255,0.75); 
-
+ 
+padding:8px 12px; 
+ 
+border-radius:999px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.08); 
+ 
+backdrop-filter:blur(20px); 
+ 
+font-size:12px; 
+ 
+color:rgba(255,255,255,0.75); 
+ 
 } 
-
+ 
 .hero{ 
-
-  border-radius:26px; 
-
-  padding:18px; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.07); 
-
-  box-shadow:0 18px 50px rgba(0,0,0,0.45); 
-
+ 
+border-radius:26px; 
+ 
+padding:18px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.07); 
+ 
+box-shadow:0 18px 50px rgba(0,0,0,0.45); 
+ 
 } 
-
+ 
 .hero-row{ 
-
-  display:flex; 
-
-  justify-content:space-between; 
-
-  align-items:flex-start; 
-
-  gap:12px; 
-
+ 
+display:flex; 
+ 
+justify-content:space-between; 
+ 
+align-items:flex-start; 
+ 
+gap:12px; 
+ 
 } 
-
+ 
 .hero-title{font-size:13px;color:rgba(255,255,255,0.65)} 
-
+ 
 .hero-value{margin-top:6px;font-size:22px;font-weight:900} 
-
+ 
 .kpis{display:flex;gap:10px;margin-top:12px} 
-
+ 
 .kpi{ 
-
-  flex:1; 
-
-  padding:12px; 
-
-  border-radius:18px; 
-
-  background:rgba(255,255,255,0.05); 
-
-  border:1px solid rgba(255,255,255,0.06); 
-
+ 
+flex:1; 
+ 
+padding:12px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(255,255,255,0.05); 
+ 
+border:1px solid rgba(255,255,255,0.06); 
+ 
 } 
-
+ 
 .kpi .k-label{font-size:12px;color:rgba(255,255,255,0.55)} 
-
+ 
 .kpi .k-val{margin-top:6px;font-size:14px;font-weight:800} 
-
+ 
 .grid3{ 
-
-  display:grid; 
-
-  grid-template-columns:repeat(3,1fr); 
-
-  gap:10px; 
-
-  margin-top:14px; 
-
+ 
+display:grid; 
+ 
+grid-template-columns:repeat(3,1fr); 
+ 
+gap:10px; 
+ 
+margin-top:14px; 
+ 
 } 
-
+ 
 .mini-card{ 
-
-  padding:12px; 
-
-  border-radius:18px; 
-
-  background:rgba(255,255,255,0.05); 
-
-  border:1px solid rgba(255,255,255,0.06); 
-
+ 
+padding:12px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(255,255,255,0.05); 
+ 
+border:1px solid rgba(255,255,255,0.06); 
+ 
 } 
-
+ 
 .mini-card .m-label{font-size:11px;color:rgba(255,255,255,0.55)} 
-
+ 
 .mini-card .m-val{margin-top:6px;font-size:16px;font-weight:900} 
-
+ 
 .quick-actions{display:flex;gap:10px;margin-top:14px} 
-
+ 
 .qa{ 
-
-  flex:1; 
-
-  padding:12px; 
-
-  border-radius:18px; 
-
-  background:rgba(255,255,255,0.07); 
-
-  border:1px solid rgba(255,255,255,0.08); 
-
-  text-align:center; 
-
-  font-size:12px; 
-
-  color:rgba(255,255,255,0.92); 
-
-  user-select:none; 
-
-  -webkit-tap-highlight-color: transparent; 
-
+ 
+flex:1; 
+ 
+padding:12px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(255,255,255,0.07); 
+ 
+border:1px solid rgba(255,255,255,0.08); 
+ 
+text-align:center; 
+ 
+font-size:12px; 
+ 
+color:rgba(255,255,255,0.92); 
+ 
+user-select:none; 
+ 
+-webkit-tap-highlight-color: transparent; 
+ 
 } 
-
+ 
 .qa:active{transform:scale(0.97)} 
-
+ 
 .small-note{ 
-
-  margin-top:12px; 
-
-  font-size:12px; 
-
-  color:rgba(255,255,255,0.55); 
-
-  line-height:1.35; 
-
+ 
+margin-top:12px; 
+ 
+font-size:12px; 
+ 
+color:rgba(255,255,255,0.55); 
+ 
+line-height:1.35; 
+ 
 } 
-
  
-
  
-
+ 
 /* ===== FINANCE v2 (plus + modal + lists) ===== */ 
-
+ 
 .screen-header{ 
-
-  display:flex; 
-
-  align-items:center; 
-
-  justify-content:space-between; 
-
-  gap:12px; 
-
-  margin-bottom:12px; 
-
+ 
+display:flex; 
+ 
+align-items:center; 
+ 
+justify-content:space-between; 
+ 
+gap:12px; 
+ 
+margin-bottom:12px; 
+ 
 } 
-
+ 
 .h-title{ 
-
-  font-size:26px; 
-
-  font-weight:900; 
-
-  letter-spacing:0.2px; 
-
+ 
+font-size:26px; 
+ 
+font-weight:900; 
+ 
+letter-spacing:0.2px; 
+ 
 } 
-
+ 
 .icon-btn{ 
-
-  width:42px;height:42px; 
-
-  border-radius:14px; 
-
-  display:flex;align-items:center;justify-content:center; 
-
-  background:rgba(255,255,255,0.07); 
-
-  border:1px solid rgba(255,255,255,0.09); 
-
-  box-shadow:0 14px 40px rgba(0,0,0,0.35); 
-
-  backdrop-filter:blur(18px); 
-
-  -webkit-tap-highlight-color: transparent; 
-
-  user-select:none; 
-
+ 
+width:42px;height:42px; 
+ 
+border-radius:14px; 
+ 
+display:flex;align-items:center;justify-content:center; 
+ 
+background:rgba(255,255,255,0.07); 
+ 
+border:1px solid rgba(255,255,255,0.09); 
+ 
+box-shadow:0 14px 40px rgba(0,0,0,0.35); 
+ 
+backdrop-filter:blur(18px); 
+ 
+-webkit-tap-highlight-color: transparent; 
+ 
+user-select:none; 
+ 
 } 
-
+ 
 .icon-btn:active{transform:scale(0.96)} 
-
+ 
 .icon-plus{ 
-
-  font-size:22px; 
-
-  font-weight:900; 
-
-  line-height:1; 
-
-  color:rgba(255,255,255,0.92); 
-
+ 
+font-size:22px; 
+ 
+font-weight:900; 
+ 
+line-height:1; 
+ 
+color:rgba(255,255,255,0.92); 
+ 
 } 
-
+ 
 .fin-summary{ 
-
-  display:grid; 
-
-  grid-template-columns:1fr 1fr; 
-
-  gap:10px; 
-
-  margin-bottom:12px; 
-
+ 
+display:grid; 
+ 
+grid-template-columns:1fr 1fr; 
+ 
+gap:10px; 
+ 
+margin-bottom:12px; 
+ 
 } 
-
+ 
 .fin-pill{ 
-
-  padding:14px; 
-
-  border-radius:20px; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.07); 
-
+ 
+padding:14px; 
+ 
+border-radius:20px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.07); 
+ 
 } 
-
+ 
 .fin-pill .lbl{font-size:12px;color:rgba(255,255,255,0.55)} 
-
+ 
 .fin-pill .val{margin-top:6px;font-size:18px;font-weight:900} 
-
+ 
 .list-card{ 
-
-  padding:14px; 
-
-  border-radius:22px; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.07); 
-
-  margin-bottom:12px; 
-
+ 
+padding:14px; 
+ 
+border-radius:22px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.07); 
+ 
+margin-bottom:12px; 
+ 
 } 
-
+ 
 .list-title{ 
-
-  font-size:13px; 
-
-  color:rgba(255,255,255,0.62); 
-
-  margin-bottom:10px; 
-
+ 
+font-size:13px; 
+ 
+color:rgba(255,255,255,0.62); 
+ 
+margin-bottom:10px; 
+ 
 } 
-
+ 
 .list-row{ 
-
-  display:flex; 
-
-  justify-content:space-between; 
-
-  gap:10px; 
-
-  padding:10px 0; 
-
-  border-bottom:1px solid rgba(255,255,255,0.06); 
-
+ 
+display:flex; 
+ 
+justify-content:space-between; 
+ 
+gap:10px; 
+ 
+padding:10px 0; 
+ 
+border-bottom:1px solid rgba(255,255,255,0.06); 
+ 
 } 
-
+ 
 .list-row:last-child{border-bottom:none} 
-
+ 
 .list-row .name{font-size:13px;color:rgba(255,255,255,0.9);max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} 
-
+ 
 .list-row .amt{font-size:13px;font-weight:900} 
-
+ 
 .muted{color:rgba(255,255,255,0.45)} 
-
  
-
+ 
 /* Modal (bottom sheet) */ 
-
+ 
 .modal-overlay{ 
-
-  position:fixed; inset:0; 
-
-  background:rgba(0,0,0,0.55); 
-
-  display:none; 
-
-  align-items:flex-end; 
-
-  justify-content:center; 
-
-  z-index:9999; 
-
+ 
+position:fixed; inset:0; 
+ 
+background:rgba(0,0,0,0.55); 
+ 
+display:none; 
+ 
+align-items:flex-end; 
+ 
+justify-content:center; 
+ 
+z-index:9999; 
+ 
 } 
-
+ 
 .modal-overlay.show{display:flex} 
-
+ 
 .sheet{ 
-
-  width:min(520px, 100%); 
-
-  border-top-left-radius:26px; 
-
-  border-top-right-radius:26px; 
-
-  padding:14px 14px 18px; 
-
-  background:rgba(18,22,32,0.92); 
-
-  border:1px solid rgba(255,255,255,0.08); 
-
-  backdrop-filter:blur(26px); 
-
-  box-shadow:0 -18px 60px rgba(0,0,0,0.55); 
-
+ 
+width:min(520px, 100%); 
+ 
+border-top-left-radius:26px; 
+ 
+border-top-right-radius:26px; 
+ 
+padding:14px 14px 18px; 
+ 
+background:rgba(18,22,32,0.92); 
+ 
+border:1px solid rgba(255,255,255,0.08); 
+ 
+backdrop-filter:blur(26px); 
+ 
+box-shadow:0 -18px 60px rgba(0,0,0,0.55); 
+ 
 } 
-
+ 
 .sheet-top{ 
-
-  display:flex; 
-
-  align-items:center; 
-
-  justify-content:space-between; 
-
-  gap:10px; 
-
-  margin-bottom:10px; 
-
+ 
+display:flex; 
+ 
+align-items:center; 
+ 
+justify-content:space-between; 
+ 
+gap:10px; 
+ 
+margin-bottom:10px; 
+ 
 } 
-
+ 
 .sheet-title{font-size:14px;font-weight:900;color:rgba(255,255,255,0.9)} 
-
+ 
 .sheet-close{ 
-
-  width:36px;height:36px;border-radius:12px; 
-
-  display:flex;align-items:center;justify-content:center; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.08); 
-
+ 
+width:36px;height:36px;border-radius:12px; 
+ 
+display:flex;align-items:center;justify-content:center; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.08); 
+ 
 } 
-
+ 
 .sheet-close:active{transform:scale(0.96)} 
-
+ 
 .segment{ 
-
-  display:flex; 
-
-  gap:8px; 
-
-  background:rgba(255,255,255,0.05); 
-
-  border:1px solid rgba(255,255,255,0.06); 
-
-  border-radius:18px; 
-
-  padding:6px; 
-
-  margin-bottom:12px; 
-
+ 
+display:flex; 
+ 
+gap:8px; 
+ 
+background:rgba(255,255,255,0.05); 
+ 
+border:1px solid rgba(255,255,255,0.06); 
+ 
+border-radius:18px; 
+ 
+padding:6px; 
+ 
+margin-bottom:12px; 
+ 
 } 
-
+ 
 .seg-btn{ 
-
-  flex:1; 
-
-  padding:10px 10px; 
-
-  border-radius:14px; 
-
-  text-align:center; 
-
-  font-size:12px; 
-
-  color:rgba(255,255,255,0.72); 
-
-  user-select:none; 
-
+ 
+flex:1; 
+ 
+padding:10px 10px; 
+ 
+border-radius:14px; 
+ 
+text-align:center; 
+ 
+font-size:12px; 
+ 
+color:rgba(255,255,255,0.72); 
+ 
+user-select:none; 
+ 
 } 
-
+ 
 .seg-btn.active{ 
-
-  background:rgba(255,255,255,0.10); 
-
-  border:1px solid rgba(255,255,255,0.10); 
-
-  color:rgba(255,255,255,0.95); 
-
-  box-shadow:0 10px 24px rgba(0,0,0,0.35); 
-
+ 
+background:rgba(255,255,255,0.10); 
+ 
+border:1px solid rgba(255,255,255,0.10); 
+ 
+color:rgba(255,255,255,0.95); 
+ 
+box-shadow:0 10px 24px rgba(0,0,0,0.35); 
+ 
 } 
-
+ 
 .form-grid{display:grid; gap:10px; margin-bottom:12px} 
-
+ 
 .inp{ 
-
-  width:100%; 
-
-  padding:14px 14px; 
-
-  border-radius:18px; 
-
-  background:rgba(255,255,255,0.06); 
-
-  border:1px solid rgba(255,255,255,0.08); 
-
-  color:#fff; 
-
-  outline:none; 
-
+ 
+width:100%; 
+ 
+padding:14px 14px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(255,255,255,0.06); 
+ 
+border:1px solid rgba(255,255,255,0.08); 
+ 
+color:#fff; 
+ 
+outline:none; 
+ 
 } 
-
+ 
 .inp::placeholder{color:rgba(255,255,255,0.35)} 
-
+ 
 .sheet-actions{display:flex; gap:10px; align-items:center} 
-
+ 
 .btn-primary{ 
-
-  flex:1; 
-
-  padding:14px 14px; 
-
-  border-radius:18px; 
-
-  background:rgba(0,255,157,0.16); 
-
-  border:1px solid rgba(0,255,157,0.22); 
-
-  color:rgba(255,255,255,0.95); 
-
-  font-weight:900; 
-
-  text-align:center; 
-
-  user-select:none; 
-
+ 
+flex:1; 
+ 
+padding:14px 14px; 
+ 
+border-radius:18px; 
+ 
+background:rgba(0,255,157,0.16); 
+ 
+border:1px solid rgba(0,255,157,0.22); 
+ 
+color:rgba(255,255,255,0.95); 
+ 
+font-weight:900; 
+ 
+text-align:center; 
+ 
+user-select:none; 
+ 
 } 
-
+ 
 .btn-primary.disabled{ 
-
-  opacity:0.45; 
-
-  filter:grayscale(0.2); 
-
-} 
-
  
-
-</style>  
-
-</head>  
-
-<body>  
-
-<div class="app">  
-
+opacity:0.45; 
+ 
+filter:grayscale(0.2); 
+ 
+} 
+ 
+ 
+</style> 
+ 
+</head> 
+ 
+<body> 
+ 
+<div class="app"> 
+ 
 <div id="home" class="screen active"> 
-
  
-
-  <div class="topbar"> 
-
-    <div class="brand"> 
-
-      <div class="brand-title">ФЕДЕРАЦИЯ</div> 
-
-      <div class="brand-sub">Executive Control • Личный контур</div> 
-
-    </div> 
-
-  </div> 
-
  
-
-  <div class="hero"> 
-
-    <div class="hero-row"> 
-
-      <div> 
-
-        <div class="hero-title">Финансы — текущий месяц</div> 
-
-        <div class="hero-value" id="heroProfit">₽ 0</div> 
-
-        <div class="small-note" id="heroPercent">Нажми на диаграмму → покажу проценты</div> 
-
-      </div> 
-
-      <div style="width:170px;"> 
-
-        <canvas id="chart" style="height:160px;"></canvas> 
-
-      </div> 
-
-    </div> 
-
+<div class="topbar"> 
  
-
-    <div class="kpis"> 
-
-      <div class="kpi"> 
-
-        <div class="k-label">Доход</div> 
-
-        <div class="k-val green" id="kIncome">₽ 0</div> 
-
-      </div> 
-
-      <div class="kpi"> 
-
-        <div class="k-label">Расход</div> 
-
-        <div class="k-val red" id="kExpense">₽ 0</div> 
-
-      </div> 
-
-      <div class="kpi"> 
-
-        <div class="k-label">Маржа</div> 
-
-        <div class="k-val orange" id="kMargin">0%</div> 
-
-      </div> 
-
-    </div> 
-
-  </div> 
-
+<div class="brand"> 
  
-
-  <div class="grid3"> 
-
-    <div class="mini-card"> 
-
-      <div class="m-label">В работе</div> 
-
-      <div class="m-val orange" id="mWork">0</div> 
-
-    </div> 
-
-    <div class="mini-card"> 
-
-      <div class="m-label">Завершено</div> 
-
-      <div class="m-val green" id="mDone">0</div> 
-
-    </div> 
-
-    <div class="mini-card"> 
-
-      <div class="m-label">Задержки</div> 
-
-      <div class="m-val red" id="mDelay">0</div> 
-
-    </div> 
-
-  </div> 
-
+<div class="brand-title">ФЕДЕРАЦИЯ</div> 
  
-
+<div class="brand-sub">Executive Control • Личный контур</div> 
+ 
 </div> 
-
  
-
+</div> 
+ 
+ 
+<div class="hero"> 
+ 
+<div class="hero-row"> 
+ 
+<div> 
+ 
+<div class="hero-title">Финансы — текущий месяц</div> 
+ 
+<div class="hero-value" id="heroProfit">₽ 0</div> 
+ 
+<div class="small-note" id="heroPercent">Нажми на диаграмму → покажу проценты</div> 
+ 
+</div> 
+ 
+<div style="width:170px;"> 
+ 
+<canvas id="chart" style="height:160px;"></canvas> 
+ 
+</div> 
+ 
+</div> 
+ 
+ 
+<div class="kpis"> 
+ 
+<div class="kpi"> 
+ 
+<div class="k-label">Доход</div> 
+ 
+<div class="k-val green" id="kIncome">₽ 0</div> 
+ 
+</div> 
+ 
+<div class="kpi"> 
+ 
+<div class="k-label">Расход</div> 
+ 
+<div class="k-val red" id="kExpense">₽ 0</div> 
+ 
+</div> 
+ 
+<div class="kpi"> 
+ 
+<div class="k-label">Маржа</div> 
+ 
+<div class="k-val orange" id="kMargin">0%</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+ 
+<div class="grid3"> 
+ 
+<div class="mini-card"> 
+ 
+<div class="m-label">В работе</div> 
+ 
+<div class="m-val orange" id="mWork">0</div> 
+ 
+</div> 
+ 
+<div class="mini-card"> 
+ 
+<div class="m-label">Завершено</div> 
+ 
+<div class="m-val green" id="mDone">0</div> 
+ 
+</div> 
+ 
+<div class="mini-card"> 
+ 
+<div class="m-label">Задержки</div> 
+ 
+<div class="m-val red" id="mDelay">0</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+ 
+</div> 
+ 
+ 
 <div id="finance" class="screen"> 
-
  
-
-  <div class="screen-header"> 
-
-    <div class="h-title">Финансы</div> 
-
-    <div class="icon-btn" id="finAddBtn" title="Добавить"> 
-
-      <div class="icon-plus">+</div> 
-
-    </div> 
-
-  </div> 
-
  
-
-  <div class="fin-summary"> 
-
-    <div class="fin-pill"> 
-
-      <div class="lbl">Доход</div> 
-
-      <div class="val green" id="sumIncome">₽ 0</div> 
-
-    </div> 
-
-    <div class="fin-pill"> 
-
-      <div class="lbl">Расход</div> 
-
-      <div class="val red" id="sumExpense">₽ 0</div> 
-
-    </div> 
-
-  </div> 
-
+<div class="screen-header"> 
  
-
-  <div class="list-card"> 
-
-    <div class="list-title">Доходы — от кого поступления</div> 
-
-    <div id="incomeList" class="muted">Пока пусто</div> 
-
-  </div> 
-
+<div class="h-title">Финансы</div> 
  
-
-  <div class="list-card"> 
-
-    <div class="list-title">Расходы — кому отправлял</div> 
-
-    <div id="expenseList" class="muted">Пока пусто</div> 
-
-  </div> 
-
+<div class="icon-btn" id="finAddBtn" title="Добавить"> 
  
-
+<div class="icon-plus">+</div> 
+ 
 </div> 
-
  
-
+</div> 
+ 
+ 
+<div class="fin-summary"> 
+ 
+<div class="fin-pill"> 
+ 
+<div class="lbl">Доход</div> 
+ 
+<div class="val green" id="sumIncome">₽ 0</div> 
+ 
+</div> 
+ 
+<div class="fin-pill"> 
+ 
+<div class="lbl">Расход</div> 
+ 
+<div class="val red" id="sumExpense">₽ 0</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+ 
+<div class="list-card"> 
+ 
+<div class="list-title">Доходы — от кого поступления</div> 
+ 
+<div id="incomeList" class="muted">Пока пусто</div> 
+ 
+</div> 
+ 
+ 
+<div class="list-card"> 
+ 
+<div class="list-title">Расходы — кому отправлял</div> 
+ 
+<div id="expenseList" class="muted">Пока пусто</div> 
+ 
+</div> 
+ 
+ 
+</div> 
+ 
+ 
 <!-- Finance modal --> 
-
+ 
 <div class="modal-overlay" id="finModal"> 
-
-  <div class="sheet"> 
-
-    <div class="sheet-top"> 
-
-      <div class="sheet-title" id="finModalTitle">Добавить операцию</div> 
-
-      <div class="sheet-close" id="finCloseBtn">✕</div> 
-
-    </div> 
-
  
-
-    <div class="segment"> 
-
-      <div class="seg-btn active" id="segIncome">Доход</div> 
-
-      <div class="seg-btn" id="segExpense">Расход</div> 
-
-    </div> 
-
+<div class="sheet"> 
  
-
-    <div class="form-grid" id="finForm"> 
-
-      <!-- dynamic fields --> 
-
-    </div> 
-
+<div class="sheet-top"> 
  
-
-    <div class="sheet-actions"> 
-
-      <div class="btn-primary disabled" id="finDoneBtn">Готово</div> 
-
-    </div> 
-
-  </div> 
-
+<div class="sheet-title" id="finModalTitle">Добавить операцию</div> 
+ 
+<div class="sheet-close" id="finCloseBtn">✕</div> 
+ 
 </div> 
-
  
-
-<div id="objects" class="screen">  
-
-<h1>Объекты</h1>  
-
-<div class="card">  
-
-<textarea id="objectInput" placeholder="Новый объект"></textarea>  
-
-<button onclick="addObject()">Добавить</button>  
-
-</div>  
-
-<div id="objectList"></div>  
-
-</div>  
-
-<div id="calendar" class="screen">  
-
-<h1>Календарь</h1>  
-
-<div class="card">  
-
-<div id="calendarGrid"><!-- Calendar v2 UI -->
-<div class="calendar-card">
-  <div class="cal-top">
-    <button class="cal-nav" id="calPrev" aria-label="Предыдущий месяц">‹</button>
-
-    <div class="cal-title">
-      <div id="calMonthLabel" class="cal-month">Март</div>
-      <div id="calYearLabel" class="cal-year">2026</div>
-    </div>
-
-    <button class="cal-nav" id="calNext" aria-label="Следующий месяц">›</button>
-  </div>
-
-  <div class="cal-dow">
-    <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
-  </div>
-
-  <div id="calGrid" class="cal-grid"></div>
-</div>
-<!-- /Calendar v2 UI --></div>  
-
-</div>  
-
-</div>  
-
-<div id="decisions" class="screen">  
-
-<h1>Решения</h1>  
-
-<div class="card">  
-
-<textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea>  
-
-<button onclick="addDecision()">Сохранить</button>  
-
-</div>  
-
-<div id="decisionList"></div>  
-
-</div>  
-
-</div>  
-
-<div class="bottom-dock">  
-
-<div class="dock-item active" onclick="switchTab('home', this)">  
-
-<div class="dock-icon">👤</div>  
-
-<div class="dock-label">Главная</div>  
-
-</div>  
-
-<div class="dock-item" onclick="switchTab('finance', this)">  
-
-<div class="dock-icon">💰</div>  
-
-<div class="dock-label">Финансы</div>  
-
-</div>  
-
-<div class="dock-item" onclick="switchTab('objects', this)">  
-
-<div class="dock-icon">💬</div>  
-
-<div class="dock-label">Объекты</div>  
-
-</div>  
-
-<div class="dock-item" onclick="switchTab('calendar', this)">  
-
-<div class="dock-icon">📅</div>  
-
-<div class="dock-label">Календарь</div>  
-
-</div>  
-
-<div class="dock-item" onclick="switchTab('decisions', this)">  
-
-<div class="dock-icon">🧠</div>  
-
-<div class="dock-label">Решения</div>  
-
-</div>  
-
-</div>  
-
-<script>  
-
-const tg = window.Telegram.WebApp;  
-
-tg.expand(); tg.ready();  
-
-let objects = JSON.parse(localStorage.getItem("objects"))||[];  
-
-let finances = JSON.parse(localStorage.getItem("finances"))||[];  
-
-let decisions = JSON.parse(localStorage.getItem("decisions"))||[];  
-
- // ===== Calendar (FEDERACIA) v2 =====
-const CAL_STORAGE_MARKS = "FED_CAL_MARKS";   // { "YYYY-MM-DD": true }
-const CAL_STORAGE_NOTES = "FED_CAL_NOTES";   // { "YYYY-MM-DD": "text" }
-
-function safeJson(str, fallback){
-  try{ return str ? JSON.parse(str) : fallback; } catch(e){ return fallback; }
-}
-
-let calView = (function(){
-  const d = new Date();
-  return { y: d.getFullYear(), m: d.getMonth() }; // m 0..11
-})();
-
-let calMarks = safeJson(localStorage.getItem(CAL_STORAGE_MARKS), {});
-let calNotes = safeJson(localStorage.getItem(CAL_STORAGE_NOTES), {});
-
-let calPressTimer = null;
-let calPressedKey = null;
-
-function pad2(n){ return String(n).padStart(2,"0"); }
-function dateKey(y,m,day){ return `${y}-${pad2(m+1)}-${pad2(day)}`; }
-
-function monthNameRu(m){
-  const names = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-  return names[m] || "";
-}
-
-function normalizeYM(y, m){
-  const d = new Date(y, m, 1);
-  return { y: d.getFullYear(), m: d.getMonth() };
-}
-
-function renderCalendarV2(){
-  const grid = document.getElementById("calGrid");
-  const ml = document.getElementById("calMonthLabel");
-  const yl = document.getElementById("calYearLabel");
-  if(!grid || !ml || !yl) return;
-
-  ml.textContent = monthNameRu(calView.m);
-  yl.textContent = String(calView.y);
-  grid.innerHTML = "";
-
-  const first = new Date(calView.y, calView.m, 1);
-  const last = new Date(calView.y, calView.m + 1, 0);
-  const daysInMonth = last.getDate();
-
-  // Пн=0..Вс=6
-  const jsDow = first.getDay();           // Вс=0..Сб=6
-  const startOffset = (jsDow + 6) % 7;    // переводим: Пн=0
-
-  // добивка предыдущих
-  const prevLast = new Date(calView.y, calView.m, 0).getDate();
-  for(let i=0; i<startOffset; i++){
-    const day = prevLast - (startOffset - 1 - i);
-    grid.appendChild(makeDayCell(calView.y, calView.m - 1, day, true));
-  }
-
-  // текущий месяц
-  for(let day=1; day<=daysInMonth; day++){
-    grid.appendChild(makeDayCell(calView.y, calView.m, day, false));
-  }
-
-  // добивка следующего до ровной сетки
-  const total = startOffset + daysInMonth;
-  const tail = (7 - (total % 7)) % 7;
-  for(let day=1; day<=tail; day++){
-    grid.appendChild(makeDayCell(calView.y, calView.m + 1, day, true));
-  }
-}
-
-function makeDayCell(y, m, day, muted){
-  const nm = normalizeYM(y,m);
-  const key = dateKey(nm.y, nm.m, day);
-
-  const el = document.createElement("div");
-  el.className = "cal-day" + (muted ? " muted" : "");
-  el.textContent = String(day);
-  el.dataset.key = key;
-
-  if(calMarks[key]) el.classList.add("done");
-  if(calNotes[key] && String(calNotes[key]).trim()) el.classList.add("has-note");
-
-  // tap + long press (iOS-friendly)
-  el.addEventListener("touchstart", ()=> startPress(key), {passive:true});
-  el.addEventListener("touchend", endPress, {passive:true});
-  el.addEventListener("touchcancel", cancelPress, {passive:true});
-
-  el.addEventListener("mousedown", ()=> startPress(key));
-  el.addEventListener("mouseup", endPress);
-  el.addEventListener("mouseleave", cancelPress);
-
-  return el;
-}
-
-function startPress(key){
-  cancelPress();
-  calPressedKey = key;
-
-  calPressTimer = setTimeout(()=>{
-    // long press -> note
-    openCalNote(key);
-    calPressTimer = null;
-  }, 450);
-}
-
-function endPress(){
-  // если таймер не успел сработать — это обычный тап
-  if(calPressTimer){
-    clearTimeout(calPressTimer);
-    calPressTimer = null;
-    toggleCalDone(calPressedKey);
-  }
-  calPressedKey = null;
-}
-
-function cancelPress(){
-  if(calPressTimer){
-    clearTimeout(calPressTimer);
-    calPressTimer = null;
-  }
-  calPressedKey = null;
-}
-
-function toggleCalDone(key){
-  if(!key) return;
-  calMarks[key] = !calMarks[key];
-  localStorage.setItem(CAL_STORAGE_MARKS, JSON.stringify(calMarks));
-  renderCalendarV2();
-}
-
-function openCalNote(key){
-  const modal = document.getElementById("calNoteModal");
-  const title = document.getElementById("calNoteTitle");
-  const text = document.getElementById("calNoteText");
-  if(!modal || !title || !text) return;
-
-  title.textContent = `Заметка • ${key}`;
-  text.value = calNotes[key] || "";
-  modal.dataset.key = key;
-
-  modal.classList.remove("hidden");
-}
-
-function closeCalNote(){
-  const modal = document.getElementById("calNoteModal");
-  if(!modal) return;
-  modal.classList.add("hidden");
-  modal.dataset.key = "";
-}
-
-function bindCalendarUI(){
-  const prev = document.getElementById("calPrev");
-  const next = document.getElementById("calNext");
-
-  if(prev) prev.addEventListener("click", ()=>{
-    const d = new Date(calView.y, calView.m - 1, 1);
-    calView.y = d.getFullYear(); calView.m = d.getMonth();
-    renderCalendarV2();
-  });
-
-  if(next) next.addEventListener("click", ()=>{
-    const d = new Date(calView.y, calView.m + 1, 1);
-    calView.y = d.getFullYear(); calView.m = d.getMonth();
-    renderCalendarV2();
-  });
-
-  const modal = document.getElementById("calNoteModal");
-  const close = document.getElementById("calNoteClose");
-  const save = document.getElementById("calNoteSave");
-  const del  = document.getElementById("calNoteDelete");
-
-  if(close) close.addEventListener("click", closeCalNote);
-
-  if(modal){
-    modal.addEventListener("click",(e)=>{
-      if(e.target && e.target.dataset && e.target.dataset.close === "1") closeCalNote();
-    });
-  }
-
-  if(save) save.addEventListener("click", ()=>{
-    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
-    const text = document.getElementById("calNoteText");
-    if(!key || !text) return;
-
-    const val = String(text.value || "").trim();
-    if(val){
-      calNotes[key] = val;
-    }else{
-      delete calNotes[key];
-    }
-    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
-    closeCalNote();
-    renderCalendarV2();
-  });
-
-  if(del) del.addEventListener("click", ()=>{
-    const key = (modal && modal.dataset.key) ? modal.dataset.key : "";
-    if(!key) return;
-    delete calNotes[key];
-    localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes));
-    closeCalNote();
-    renderCalendarV2();
-  });
-}
-
-// ===== Finance Entries v2 ===== 
-
-let financeEntries = JSON.parse(localStorage.getItem("fed_fin_entries") || "[]"); 
-
  
-
-// migrate old format (if exists) 
-
-(function migrateOldFinances(){ 
-
-  try{ 
-
-    const old = JSON.parse(localStorage.getItem("finances") || "null"); 
-
-    if(Array.isArray(old) && old.length && financeEntries.length === 0){ 
-
-      old.forEach(x=>{ 
-
-        const inc = Number(x.income||0); 
-
-        const exp = Number(x.expense||0); 
-
-        const ts = x.ts || Date.now(); 
-
-        if(inc>0){ 
-
-          financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"income", counterparty:(x.from||x.object||"Не указано"), note:"", amount:inc, ts}); 
-
-        } 
-
-        if(exp>0){ 
-
-          financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"expense", counterparty:(x.to||x.object||"Не указано"), note:"", amount:exp, ts}); 
-
-        } 
-
-      }); 
-
-      localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
-
-    } 
-
-  }catch(e){} 
-
+<div class="segment"> 
+ 
+<div class="seg-btn active" id="segIncome">Доход</div> 
+ 
+<div class="seg-btn" id="segExpense">Расход</div> 
+ 
+</div> 
+ 
+ 
+<div class="form-grid" id="finForm"> 
+ 
+<!-- dynamic fields --> 
+ 
+</div> 
+ 
+ 
+<div class="sheet-actions"> 
+ 
+<div class="btn-primary disabled" id="finDoneBtn">Готово</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+ 
+<div id="objects" class="screen"> 
+ 
+<h1>Объекты</h1> 
+ 
+<div class="card"> 
+ 
+<textarea id="objectInput" placeholder="Новый объект"></textarea> 
+ 
+<button onclick="addObject()">Добавить</button> 
+ 
+</div> 
+ 
+<div id="objectList"></div> 
+ 
+</div> 
+ 
+<div id="calendar" class="screen"> 
+ 
+<h1>Календарь</h1> 
+ 
+<div class="card"> 
+ 
+<div id="calendarGrid"><!-- Calendar v2 UI --> 
+<div class="calendar-card"> 
+<div class="cal-top"> 
+<button class="cal-nav" id="calPrev" aria-label="Предыдущий месяц">‹</button> 
+ 
+<div class="cal-title"> 
+<div id="calMonthLabel" class="cal-month">Март</div> 
+<div id="calYearLabel" class="cal-year">2026</div> 
+</div> 
+ 
+<button class="cal-nav" id="calNext" aria-label="Следующий месяц">›</button> 
+</div> 
+ 
+<div class="cal-dow"> 
+<div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div> 
+</div> 
+ 
+<div id="calGrid" class="cal-grid"></div> 
+</div> 
+<!-- /Calendar v2 UI --></div> 
+ 
+</div> 
+ 
+</div> 
+ 
+<div id="decisions" class="screen"> 
+ 
+<h1>Решения</h1> 
+ 
+<div class="card"> 
+ 
+<textarea id="decisionInput" placeholder="Зафиксировать решение"></textarea> 
+ 
+<button onclick="addDecision()">Сохранить</button> 
+ 
+</div> 
+ 
+<div id="decisionList"></div> 
+ 
+</div> 
+ 
+</div> 
+ 
+<div class="bottom-dock"> 
+ 
+<div class="dock-item active" onclick="switchTab('home', this)"> 
+ 
+<div class="dock-icon">👤</div> 
+ 
+<div class="dock-label">Главная</div> 
+ 
+</div> 
+ 
+<div class="dock-item" onclick="switchTab('finance', this)"> 
+ 
+<div class="dock-icon">💰</div> 
+ 
+<div class="dock-label">Финансы</div> 
+ 
+</div> 
+ 
+<div class="dock-item" onclick="switchTab('objects', this)"> 
+ 
+<div class="dock-icon">💬</div> 
+ 
+<div class="dock-label">Объекты</div> 
+ 
+<div class="dock-item" onclick="switchTab('calendar', this)"> 
+ 
+<div class="dock-icon">📅</div> 
+ 
+<div class="dock-label">Календарь</div> 
+ 
+</div> 
+ 
+<div class="dock-item" onclick="switchTab('decisions', this)"> 
+ 
+<div class="dock-icon">🧠</div> 
+ 
+<div class="dock-label">Решения</div> 
+ 
+</div> 
+ 
+</div> 
+ 
+<!-- Calendar Note Modal (moved INSIDE body) --> 
+<div id="calNoteModal" class="modal hidden" role="dialog" aria-modal="true"> 
+<div class="modal-backdrop" data-close="1"></div> 
+<div class="modal-sheet"> 
+<div class="modal-head"> 
+<div class="modal-title" id="calNoteTitle">Заметка</div> 
+<button class="icon-btn" id="calNoteClose" aria-label="Закрыть">✕</button> 
+</div> 
+ 
+<textarea id="calNoteText" class="input cal-note" placeholder="Напиши заметку..."></textarea> 
+ 
+<div class="modal-actions"> 
+<button class="btn primary" id="calNoteSave">Сохранить</button> 
+<button class="btn" id="calNoteDelete">Удалить заметку</button> 
+</div> 
+</div> 
+</div> 
+ 
+<script> 
+ 
+const tg = window.Telegram.WebApp; 
+ 
+tg.expand(); tg.ready(); 
+ 
+let objects = JSON.parse(localStorage.getItem("objects"))||[]; 
+ 
+let finances = JSON.parse(localStorage.getItem("finances"))||[]; 
+ 
+let decisions = JSON.parse(localStorage.getItem("decisions"))||[]; 
+ 
+// ===== Calendar (FEDERACIA) v2 ===== 
+const CAL_STORAGE_MARKS = "FED_CAL_MARKS"; // { "YYYY-MM-DD": true } 
+const CAL_STORAGE_NOTES = "FED_CAL_NOTES"; // { "YYYY-MM-DD": "text" } 
+ 
+function safeJson(str, fallback){ 
+try{ return str ? JSON.parse(str) : fallback; } catch(e){ return fallback; } 
+} 
+ 
+let calView = (function(){ 
+const d = new Date(); 
+return { y: d.getFullYear(), m: d.getMonth() }; // m 0..11 
 })(); 
-
  
-
+let calMarks = safeJson(localStorage.getItem(CAL_STORAGE_MARKS), {}); 
+let calNotes = safeJson(localStorage.getItem(CAL_STORAGE_NOTES), {}); 
+ 
+let calPressTimer = null; 
+let calPressedKey = null; 
+ 
+function pad2(n){ return String(n).padStart(2,"0"); } 
+function dateKey(y,m,day){ return `${y}-${pad2(m+1)}-${pad2(day)}`; } 
+ 
+function monthNameRu(m){ 
+const names = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]; 
+return names[m] || ""; 
+} 
+ 
+function normalizeYM(y, m){ 
+const d = new Date(y, m, 1); 
+return { y: d.getFullYear(), m: d.getMonth() }; 
+} 
+ 
+function renderCalendarV2(){ 
+const grid = document.getElementById("calGrid"); 
+const ml = document.getElementById("calMonthLabel"); 
+const yl = document.getElementById("calYearLabel"); 
+if(!grid || !ml || !yl) return; 
+ 
+ml.textContent = monthNameRu(calView.m); 
+yl.textContent = String(calView.y); 
+grid.innerHTML = ""; 
+ 
+const first = new Date(calView.y, calView.m, 1); 
+const last = new Date(calView.y, calView.m + 1, 0); 
+const daysInMonth = last.getDate(); 
+ 
+// Пн=0..Вс=6 
+const jsDow = first.getDay(); // Вс=0..Сб=6 
+const startOffset = (jsDow + 6) % 7; // переводим: Пн=0 
+ 
+// добивка предыдущих 
+const prevLast = new Date(calView.y, calView.m, 0).getDate(); 
+for(let i=0; i<startOffset; i++){ 
+const day = prevLast - (startOffset - 1 - i); 
+grid.appendChild(makeDayCell(calView.y, calView.m - 1, day, true)); 
+} 
+ 
+// текущий месяц 
+for(let day=1; day<=daysInMonth; day++){ 
+grid.appendChild(makeDayCell(calView.y, calView.m, day, false)); 
+} 
+ 
+// добивка следующего до ровной сетки 
+const total = startOffset + daysInMonth; 
+const tail = (7 - (total % 7)) % 7; 
+for(let day=1; day<=tail; day++){ 
+grid.appendChild(makeDayCell(calView.y, calView.m + 1, day, true)); 
+} 
+} 
+ 
+function makeDayCell(y, m, day, muted){ 
+const nm = normalizeYM(y,m); 
+const key = dateKey(nm.y, nm.m, day); 
+ 
+const el = document.createElement("div"); 
+el.className = "cal-day" + (muted ? " muted" : ""); 
+el.textContent = String(day); 
+el.dataset.key = key; 
+ 
+if(calMarks[key]) el.classList.add("done"); 
+if(calNotes[key] && String(calNotes[key]).trim()) el.classList.add("has-note"); 
+ 
+// tap + long press (iOS-friendly) 
+el.addEventListener("touchstart", ()=> startPress(key), {passive:true}); 
+el.addEventListener("touchend", endPress, {passive:true}); 
+el.addEventListener("touchcancel", cancelPress, {passive:true}); 
+ 
+el.addEventListener("mousedown", ()=> startPress(key)); 
+el.addEventListener("mouseup", endPress); 
+el.addEventListener("mouseleave", cancelPress); 
+ 
+return el; 
+} 
+ 
+function startPress(key){ 
+cancelPress(); 
+calPressedKey = key; 
+ 
+calPressTimer = setTimeout(()=>{ 
+// long press -> note 
+openCalNote(key); 
+calPressTimer = null; 
+}, 450); 
+} 
+ 
+function endPress(){ 
+// если таймер не успел сработать — это обычный тап 
+if(calPressTimer){ 
+clearTimeout(calPressTimer); 
+calPressTimer = null; 
+toggleCalDone(calPressedKey); 
+} 
+calPressedKey = null; 
+} 
+ 
+function cancelPress(){ 
+if(calPressTimer){ 
+clearTimeout(calPressTimer); 
+calPressTimer = null; 
+} 
+calPressedKey = null; 
+} 
+ 
+function toggleCalDone(key){ 
+if(!key) return; 
+calMarks[key] = !calMarks[key]; 
+localStorage.setItem(CAL_STORAGE_MARKS, JSON.stringify(calMarks)); 
+renderCalendarV2(); 
+} 
+ 
+function openCalNote(key){ 
+const modal = document.getElementById("calNoteModal"); 
+const title = document.getElementById("calNoteTitle"); 
+const text = document.getElementById("calNoteText"); 
+if(!modal || !title || !text) return; 
+ 
+title.textContent = `Заметка • ${key}`; 
+text.value = calNotes[key] || ""; 
+modal.dataset.key = key; 
+ 
+modal.classList.remove("hidden"); 
+} 
+ 
+function closeCalNote(){ 
+const modal = document.getElementById("calNoteModal"); 
+if(!modal) return; 
+modal.classList.add("hidden"); 
+modal.dataset.key = ""; 
+} 
+ 
+function bindCalendarUI(){ 
+const prev = document.getElementById("calPrev"); 
+const next = document.getElementById("calNext"); 
+ 
+if(prev) prev.addEventListener("click", ()=>{ 
+const d = new Date(calView.y, calView.m - 1, 1); 
+calView.y = d.getFullYear(); calView.m = d.getMonth(); 
+renderCalendarV2(); 
+}); 
+ 
+if(next) next.addEventListener("click", ()=>{ 
+const d = new Date(calView.y, calView.m + 1, 1); 
+calView.y = d.getFullYear(); calView.m = d.getMonth(); 
+renderCalendarV2(); 
+}); 
+ 
+const modal = document.getElementById("calNoteModal"); 
+const close = document.getElementById("calNoteClose"); 
+const save = document.getElementById("calNoteSave"); 
+const del = document.getElementById("calNoteDelete"); 
+ 
+if(close) close.addEventListener("click", closeCalNote); 
+ 
+if(modal){ 
+modal.addEventListener("click",(e)=>{ 
+if(e.target && e.target.dataset && e.target.dataset.close === "1") closeCalNote(); 
+}); 
+} 
+ 
+if(save) save.addEventListener("click", ()=>{ 
+const key = (modal && modal.dataset.key) ? modal.dataset.key : ""; 
+const text = document.getElementById("calNoteText"); 
+if(!key || !text) return; 
+ 
+const val = String(text.value || "").trim(); 
+if(val){ 
+calNotes[key] = val; 
+}else{ 
+delete calNotes[key]; 
+} 
+localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes)); 
+closeCalNote(); 
+renderCalendarV2(); 
+}); 
+ 
+if(del) del.addEventListener("click", ()=>{ 
+const key = (modal && modal.dataset.key) ? modal.dataset.key : ""; 
+if(!key) return; 
+delete calNotes[key]; 
+localStorage.setItem(CAL_STORAGE_NOTES, JSON.stringify(calNotes)); 
+closeCalNote(); 
+renderCalendarV2(); 
+}); 
+} 
+ 
+// ===== Finance Entries v2 ===== 
+ 
+let financeEntries = JSON.parse(localStorage.getItem("fed_fin_entries") || "[]"); 
+ 
+ 
+// migrate old format (if exists) 
+ 
+(function migrateOldFinances(){ 
+ 
+try{ 
+ 
+const old = JSON.parse(localStorage.getItem("finances") || "null"); 
+ 
+if(Array.isArray(old) && old.length && financeEntries.length === 0){ 
+ 
+old.forEach(x=>{ 
+ 
+const inc = Number(x.income||0); 
+ 
+const exp = Number(x.expense||0); 
+ 
+const ts = x.ts || Date.now(); 
+ 
+if(inc>0){ 
+ 
+financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"income", counterparty:(x.from||x.object||"Не указано"), note:"", amount:inc, ts}); 
+ 
+} 
+ 
+if(exp>0){ 
+ 
+financeEntries.push({id: crypto?.randomUUID?.() || String(Math.random()), type:"expense", counterparty:(x.to||x.object||"Не указано"), note:"", amount:exp, ts}); 
+ 
+} 
+ 
+}); 
+ 
+localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
+ 
+} 
+ 
+}catch(e){} 
+ 
+})(); 
+ 
+ 
 function saveFinanceEntries(){ 
-
-  localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
-
-} 
-
  
-
+localStorage.setItem("fed_fin_entries", JSON.stringify(financeEntries)); 
+ 
+} 
+ 
+ 
 function fmtRub(n){ 
-
-  return "₽ " + Math.round(Number(n)||0).toLocaleString("ru-RU"); 
-
-} 
-
  
-
+return "₽ " + Math.round(Number(n)||0).toLocaleString("ru-RU"); 
+ 
+} 
+ 
+ 
 function escapeHtml(str){ 
-
-  return String(str||"") 
-
-    .replaceAll("&","&amp;") 
-
-    .replaceAll("<","&lt;") 
-
-    .replaceAll(">","&gt;") 
-
-    .replaceAll('"',"&quot;") 
-
-    .replaceAll("'","&#039;"); 
-
+ 
+return String(str||"") 
+ 
+.replaceAll("&","&amp;") 
+ 
+.replaceAll("<","&lt;") 
+ 
+.replaceAll(">","&gt;") 
+ 
+.replaceAll('"',"&quot;") 
+ 
+.replaceAll("'","&#039;"); 
+ 
 } 
-
-let __switching = false;  
-
+ 
+let __switching = false; 
+ 
 function switchTab(id, el){ 
-
-  // активная кнопка в доке 
-
-  document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active")); 
-
-  el.classList.add("active"); 
-
  
-
-  // анти-bounce в Telegram (если поддерживается) 
-
-  try{ tg.disableVerticalSwipes?.(); }catch(e){} 
-
+// активная кнопка в доке 
  
-
-  // переключение экранов (СТАТИЧНО, без анимаций) 
-
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); 
-
-  const next = document.getElementById(id); 
-
-  next.classList.add("active"); 
-
+document.querySelectorAll(".dock-item").forEach(n=>n.classList.remove("active")); 
  
-
-  // сброс скролла только внутри экрана 
-
-  next.scrollTop = 0; 
-
+el.classList.add("active"); 
  
-
-  // haptic (Telegram) 
-
-  try{ 
-
-    if(window.Telegram?.WebApp?.HapticFeedback){ 
-
-      Telegram.WebApp.HapticFeedback.impactOccurred("light"); 
-
-    } 
-
-  }catch(e){} 
-
+ 
+// анти-bounce в Telegram (если поддерживается) 
+ 
+try{ tg.disableVerticalSwipes?.(); }catch(e){} 
+ 
+ 
+// переключение экранов (СТАТИЧНО, без анимаций) 
+ 
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); 
+ 
+const next = document.getElementById(id); 
+ 
+next.classList.add("active"); 
+ 
+ 
+// сброс скролла только внутри экрана 
+ 
+next.scrollTop = 0; 
+ 
+ 
+// календарь — перерисовать при входе (чтобы было актуально) 
+if(id === "calendar"){ 
+try{ renderCalendarV2(); }catch(e){} 
 } 
-
-function addObject(){  
-
-let text=document.getElementById("objectInput").value;  
-
-if(!text)return;  
-
-objects.push(text);  
-
-localStorage.setItem("objects",JSON.stringify(objects));  
-renderObjects();
-document.getElementById("objectInput").value="";
-recalcHome();
-}
-
-
-function recalcHome(){ 
-
-  // objects summary (пока по количеству) 
-
-  const mWork = document.getElementById("mWork"); 
-
-  const mDone = document.getElementById("mDone"); 
-
-  const mDelay = document.getElementById("mDelay"); 
-
-  if(mWork) mWork.textContent = objects.length; 
-
-  if(mDone) mDone.textContent = 0; 
-
-  if(mDelay) mDelay.textContent = 0; 
-
  
-
-  drawChart(); 
-
-} 
-
  
-
-function openQuick(type){ 
-
-  const items = document.querySelectorAll(".dock-item"); 
-
-  if(type === "expense"){ 
-
-    switchTab("finance", items[1]); 
-
-    const exp = document.getElementById("finAddBtn"); 
-
-    exp?.focus?.(); 
-
-  } 
-
-  if(type === "object"){ 
-
-    switchTab("objects", items[2]); 
-
-    const oi = document.getElementById("objectInput"); 
-
-    oi?.focus?.(); 
-
-  } 
-
-  if(type === "decision"){ 
-
-    switchTab("decisions", items[4]); 
-
-    const di = document.getElementById("decisionInput"); 
-
-    di?.focus?.(); 
-
-  } 
-
-} 
-
+// haptic (Telegram) 
  
-
+try{ 
  
-
-// ===== Finance Modal Logic ===== 
-
-let finMode = "income"; 
-
-const finModal = document.getElementById("finModal"); 
-
-const finAddBtn = document.getElementById("finAddBtn"); 
-
-const finCloseBtn = document.getElementById("finCloseBtn"); 
-
-const segIncome = document.getElementById("segIncome"); 
-
-const segExpense = document.getElementById("segExpense"); 
-
-const finForm = document.getElementById("finForm"); 
-
-const finDoneBtn = document.getElementById("finDoneBtn"); 
-
+if(window.Telegram?.WebApp?.HapticFeedback){ 
  
-
-function openFinModal(){ 
-
-  if(!finModal) return; 
-
-  finModal.classList.add("show"); 
-
-  setFinMode("income"); 
-
-  buildFinForm(); 
-
-  validateFinForm(); 
-
-} 
-
-function closeFinModal(){ 
-
-  finModal?.classList.remove("show"); 
-
-} 
-
-function setFinMode(mode){ 
-
-  finMode = mode; 
-
-  segIncome?.classList.toggle("active", mode==="income"); 
-
-  segExpense?.classList.toggle("active", mode==="expense"); 
-
-  buildFinForm(); 
-
-  validateFinForm(); 
-
-} 
-
-function nowLocalString(){ 
-
-  try{ 
-
-    return new Date().toLocaleString("ru-RU", {hour12:false}); 
-
-  }catch(e){ return new Date().toString(); } 
-
-} 
-
-function buildFinForm(){ 
-
-  if(!finForm) return; 
-
-  const dt = nowLocalString(); 
-
-  if(finMode==="income"){ 
-
-    finForm.innerHTML = ` 
-
-      <input class="inp" id="fFrom" placeholder="От кого поступления" /> 
-
-      <input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
-
-      <input class="inp" id="fDT" value="${dt}" disabled /> 
-
-    `; 
-
-  }else{ 
-
-    finForm.innerHTML = ` 
-
-      <input class="inp" id="fTo" placeholder="Кому" /> 
-
-      <input class="inp" id="fWhat" placeholder="За что" /> 
-
-      <input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
-
-      <input class="inp" id="fDT" value="${dt}" disabled /> 
-
-    `; 
-
-  } 
-
-  // bind validation 
-
-  finForm.querySelectorAll("input").forEach(i=>{ 
-
-    i.addEventListener("input", validateFinForm); 
-
-  }); 
-
-} 
-
-function validateFinForm(){ 
-
-  if(!finDoneBtn) return false; 
-
-  let ok = false; 
-
-  const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
-
-  if(finMode==="income"){ 
-
-    const from = (document.getElementById("fFrom")?.value || "").trim(); 
-
-    ok = from.length>0 && amount>0; 
-
-  }else{ 
-
-    const to = (document.getElementById("fTo")?.value || "").trim(); 
-
-    const what = (document.getElementById("fWhat")?.value || "").trim(); 
-
-    ok = to.length>0 && what.length>0 && amount>0; 
-
-  } 
-
-  finDoneBtn.classList.toggle("disabled", !ok); 
-
-  return ok; 
-
-} 
-
-function submitFinForm(){ 
-
-  if(!validateFinForm()) return; 
-
-  const ts = Date.now(); 
-
-  const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
-
-  if(finMode==="income"){ 
-
-    const from = (document.getElementById("fFrom")?.value || "").trim(); 
-
-    financeEntries.unshift({ 
-
-      id: crypto?.randomUUID?.() || String(Math.random()), 
-
-      type:"income", 
-
-      counterparty: from, 
-
-      note:"", 
-
-      amount, 
-
-      ts 
-
-    }); 
-
-  }else{ 
-
-    const to = (document.getElementById("fTo")?.value || "").trim(); 
-
-    const what = (document.getElementById("fWhat")?.value || "").trim(); 
-
-    financeEntries.unshift({ 
-
-      id: crypto?.randomUUID?.() || String(Math.random()), 
-
-      type:"expense", 
-
-      counterparty: to, 
-
-      note: what, 
-
-      amount, 
-
-      ts 
-
-    }); 
-
-  } 
-
-  saveFinanceEntries(); 
-
-  closeFinModal(); 
-
-  renderFinance(); 
-
-} 
-
+Telegram.WebApp.HapticFeedback.impactOccurred("light"); 
  
-
-finAddBtn?.addEventListener("click", openFinModal); 
-
-finCloseBtn?.addEventListener("click", closeFinModal); 
-
-finModal?.addEventListener("click", (e)=>{ if(e.target===finModal) closeFinModal(); }); 
-
-segIncome?.addEventListener("click", ()=>setFinMode("income")); 
-
-segExpense?.addEventListener("click", ()=>setFinMode("expense")); 
-
-finDoneBtn?.addEventListener("click", submitFinForm); 
-
+} 
  
-
+}catch(e){} 
+ 
+} 
+ 
+function addObject(){ 
+ 
+let text=document.getElementById("objectInput").value; 
+ 
+if(!text)return; 
+ 
+objects.push(text); 
+ 
+localStorage.setItem("objects",JSON.stringify(objects)); 
 renderObjects(); 
-
-recalcHome();  
-
-document.getElementById("objectInput").value="";  
-
-
-function renderFinance(){ 
-
-  const sumIncome = document.getElementById("sumIncome"); 
-
-  const sumExpense = document.getElementById("sumExpense"); 
-
-  const incomeList = document.getElementById("incomeList"); 
-
-  const expenseList = document.getElementById("expenseList"); 
-
- 
-
-  const incomeTotal = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
-
-  const expenseTotal = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
-
-  if(sumIncome) sumIncome.textContent = fmtRub(incomeTotal); 
-
-  if(sumExpense) sumExpense.textContent = fmtRub(expenseTotal); 
-
- 
-
-  const groupBy = (arr)=>{ 
-
-    const m = new Map(); 
-
-    arr.forEach(e=>{ 
-
-      const key = (e.counterparty||"Не указано").trim(); 
-
-      m.set(key, (m.get(key)||0) + (Number(e.amount)||0)); 
-
-    }); 
-
-    return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]); 
-
-  }; 
-
- 
-
-  const makeRows = (pairs, colorClass)=>{ 
-
-    if(!pairs.length) return '<div class="muted">Пока пусто</div>'; 
-
-    return pairs.slice(0,30).map(([name,sum])=>` 
-
-      <div class="list-row"> 
-
-        <div class="name">${escapeHtml(name)}</div> 
-
-        <div class="amt ${colorClass}">${fmtRub(sum)}</div> 
-
-      </div> 
-
-    `).join(""); 
-
-  }; 
-
- 
-
-  if(incomeList) incomeList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="income")), "green"); 
-
-  if(expenseList) expenseList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="expense")), "red"); 
-
- 
-
-  // refresh home chart + KPIs 
-
-  recalcHome(); 
-
-} 
-
-let list=document.getElementById("objectList");  
-
-list.innerHTML="";  
-
-objects.forEach(o=>{  
-
-let div=document.createElement("div");  
-
-div.className="card";  
-
-div.innerText=o;  
-
-list.appendChild(div);  
-
-});  
-
-
-
-function drawChart(){  
-
-const canvas=document.getElementById("chart");  
-
-if(!canvas) return; 
-
-const ctx=canvas.getContext("2d");  
-
-canvas.width=350; canvas.height=200;  
-
- 
-
-let totalIncome = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
-
-let totalExpense = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
-
-let profit=totalIncome-totalExpense; 
-
- 
-
-let percent=(totalExpense/(totalIncome||1))*180;  
-
-ctx.clearRect(0,0,canvas.width,canvas.height);  
-
- 
-
-// expense (red) 
-
-ctx.beginPath();  
-
-ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180));  
-
-ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke();  
-
- 
-
-// income remainder (green) 
-
-ctx.beginPath();  
-
-ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI);  
-
-ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke();  
-
- 
-
-// Update Home KPIs 
-
-const fmt = (n)=>("₽ "+Math.round(n).toLocaleString("ru-RU")); 
-
-const kIncome = document.getElementById("kIncome"); 
-
-const kExpense = document.getElementById("kExpense"); 
-
-const heroProfit = document.getElementById("heroProfit"); 
-
-const kMargin = document.getElementById("kMargin"); 
-
- 
-
-if(kIncome) kIncome.textContent = fmt(totalIncome); 
-
-if(kExpense) kExpense.textContent = fmt(totalExpense); 
-
-if(heroProfit) heroProfit.textContent = fmt(profit); 
-
-if(kMargin){ 
-
-  const margin = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
-
-  kMargin.textContent = margin + "%"; 
-
-} 
-
- 
-
-// Click -> show percentages 
-
-canvas.onclick=function(){  
-
-  const expP = totalIncome>0 ? Math.round((totalExpense/totalIncome)*100) : 0; 
-
-  const profP = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
-
-  const heroPercent = document.getElementById("heroPercent"); 
-
-  if(heroPercent){ 
-
-    heroPercent.textContent = "Расход: " + expP + "% • Прибыль: " + profP + "%"; 
-
-  }else{ 
-
-    alert("Доход: "+fmt(totalIncome)+"\nРасход: "+fmt(totalExpense)+"\nПрибыль: "+fmt(profit)); 
-
-  } 
-
-}; 
-
-}  
-
-function renderCalendar(){  
-
-let grid=document.getElementById("calendarGrid");  
-
-grid.innerHTML="";  
-
-for(let i=1;i<=30;i++){  
-
-let day=document.createElement("div");  
-
-day.className="calendar-day";  
-
-day.innerText=i;  
-
-day.onclick=function(){day.classList.toggle("marked");}  
-
-grid.appendChild(day);  
-
-}  
-
-}  
-
-function addDecision(){  
-
-let text=document.getElementById("decisionInput").value;  
-
-if(!text)return;  
-
-decisions.push(text);  
-
-localStorage.setItem("decisions",JSON.stringify(decisions));  
-
-renderDecisions(); recalcHome();  
-
-document.getElementById("decisionInput").value="";  
-
-}  
-
-function renderDecisions(){  
-
-let list=document.getElementById("decisionList");  
-
-list.innerHTML="";  
-
-decisions.forEach(d=>{  
-
-let div=document.createElement("div");  
-
-div.className="card";  
-
-div.innerText=d;  
-
-list.appendChild(div);  
-
-});  
-
-}  
-
-renderObjects(); 
-
-renderFinance();  
-
-renderCalendar();  
-
-renderDecisions(); recalcHome();  
-
-drawChart();  
-
+document.getElementById("objectInput").value=""; 
 recalcHome(); 
-
-</script>  
-
-</body>  <!-- Calendar Note Modal -->
-<div id="calNoteModal" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="modal-backdrop" data-close="1"></div>
-  <div class="modal-sheet">
-    <div class="modal-head">
-      <div class="modal-title" id="calNoteTitle">Заметка</div>
-      <button class="icon-btn" id="calNoteClose" aria-label="Закрыть">✕</button>
-    </div>
-
-    <textarea id="calNoteText" class="input cal-note" placeholder="Напиши заметку..."></textarea>
-
-    <div class="modal-actions">
-      <button class="btn primary" id="calNoteSave">Сохранить</button>
-      <button class="btn" id="calNoteDelete">Удалить заметку</button>
-    </div>
-  </div>
-</div>
-
+} 
+ 
+ 
+function recalcHome(){ 
+ 
+// objects summary (пока по количеству) 
+ 
+const mWork = document.getElementById("mWork"); 
+ 
+const mDone = document.getElementById("mDone"); 
+ 
+const mDelay = document.getElementById("mDelay"); 
+ 
+if(mWork) mWork.textContent = objects.length; 
+ 
+if(mDone) mDone.textContent = 0; 
+ 
+if(mDelay) mDelay.textContent = 0; 
+ 
+ 
+drawChart(); 
+ 
+} 
+ 
+ 
+function openQuick(type){ 
+ 
+const items = document.querySelectorAll(".dock-item"); 
+ 
+if(type === "expense"){ 
+ 
+switchTab("finance", items[1]); 
+ 
+const exp = document.getElementById("finAddBtn"); 
+ 
+exp?.focus?.(); 
+ 
+} 
+ 
+if(type === "object"){ 
+ 
+switchTab("objects", items[2]); 
+ 
+const oi = document.getElementById("objectInput"); 
+ 
+oi?.focus?.(); 
+ 
+} 
+ 
+if(type === "decision"){ 
+ 
+switchTab("decisions", items[4]); 
+ 
+const di = document.getElementById("decisionInput"); 
+ 
+di?.focus?.(); 
+ 
+} 
+ 
+} 
+ 
+ 
+ 
+// ===== Finance Modal Logic ===== 
+ 
+let finMode = "income"; 
+ 
+const finModal = document.getElementById("finModal"); 
+ 
+const finAddBtn = document.getElementById("finAddBtn"); 
+ 
+const finCloseBtn = document.getElementById("finCloseBtn"); 
+ 
+const segIncome = document.getElementById("segIncome"); 
+ 
+const segExpense = document.getElementById("segExpense"); 
+ 
+const finForm = document.getElementById("finForm"); 
+ 
+const finDoneBtn = document.getElementById("finDoneBtn"); 
+ 
+ 
+function openFinModal(){ 
+ 
+if(!finModal) return; 
+ 
+finModal.classList.add("show"); 
+ 
+setFinMode("income"); 
+ 
+buildFinForm(); 
+ 
+validateFinForm(); 
+ 
+} 
+function closeFinModal(){ 
+ 
+finModal?.classList.remove("show"); 
+ 
+} 
+ 
+function setFinMode(mode){ 
+ 
+finMode = mode; 
+ 
+segIncome?.classList.toggle("active", mode==="income"); 
+ 
+segExpense?.classList.toggle("active", mode==="expense"); 
+ 
+buildFinForm(); 
+ 
+validateFinForm(); 
+ 
+} 
+ 
+function nowLocalString(){ 
+ 
+try{ 
+ 
+return new Date().toLocaleString("ru-RU", {hour12:false}); 
+ 
+}catch(e){ return new Date().toString(); } 
+ 
+} 
+ 
+function buildFinForm(){ 
+ 
+if(!finForm) return; 
+ 
+const dt = nowLocalString(); 
+ 
+if(finMode==="income"){ 
+ 
+finForm.innerHTML = ` 
+ 
+<input class="inp" id="fFrom" placeholder="От кого поступления" /> 
+ 
+<input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
+ 
+<input class="inp" id="fDT" value="${dt}" disabled /> 
+ 
+`; 
+ 
+}else{ 
+ 
+finForm.innerHTML = ` 
+ 
+<input class="inp" id="fTo" placeholder="Кому" /> 
+ 
+<input class="inp" id="fWhat" placeholder="За что" /> 
+ 
+<input class="inp" id="fAmount" placeholder="Сумма" inputmode="numeric" /> 
+ 
+<input class="inp" id="fDT" value="${dt}" disabled /> 
+ 
+`; 
+ 
+} 
+ 
+ 
+// bind validation 
+ 
+finForm.querySelectorAll("input").forEach(i=>{ 
+ 
+i.addEventListener("input", validateFinForm); 
+ 
+}); 
+ 
+} 
+ 
+function validateFinForm(){ 
+ 
+if(!finDoneBtn) return false; 
+ 
+let ok = false; 
+ 
+const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
+ 
+if(finMode==="income"){ 
+ 
+const from = (document.getElementById("fFrom")?.value || "").trim(); 
+ 
+ok = from.length>0 && amount>0; 
+ 
+}else{ 
+ 
+const to = (document.getElementById("fTo")?.value || "").trim(); 
+ 
+const what = (document.getElementById("fWhat")?.value || "").trim(); 
+ 
+ok = to.length>0 && what.length>0 && amount>0; 
+ 
+} 
+ 
+finDoneBtn.classList.toggle("disabled", !ok); 
+ 
+return ok; 
+ 
+} 
+ 
+function submitFinForm(){ 
+ 
+if(!validateFinForm()) return; 
+ 
+const ts = Date.now(); 
+ 
+const amount = Number((document.getElementById("fAmount")?.value || "").replace(",", ".")); 
+ 
+if(finMode==="income"){ 
+ 
+const from = (document.getElementById("fFrom")?.value || "").trim(); 
+ 
+financeEntries.unshift({ 
+ 
+id: crypto?.randomUUID?.() || String(Math.random()), 
+ 
+type:"income", 
+ 
+counterparty: from, 
+ 
+note:"", 
+ 
+amount, 
+ 
+ts 
+ 
+}); 
+ 
+}else{ 
+ 
+const to = (document.getElementById("fTo")?.value || "").trim(); 
+ 
+const what = (document.getElementById("fWhat")?.value || "").trim(); 
+ 
+financeEntries.unshift({ 
+ 
+id: crypto?.randomUUID?.() || String(Math.random()), 
+ 
+type:"expense", 
+ 
+counterparty: to, 
+ 
+note: what, 
+ 
+amount, 
+ 
+ts 
+ 
+}); 
+ 
+} 
+ 
+saveFinanceEntries(); 
+ 
+closeFinModal(); 
+ 
+renderFinance(); 
+ 
+} 
+ 
+ 
+finAddBtn?.addEventListener("click", openFinModal); 
+ 
+finCloseBtn?.addEventListener("click", closeFinModal); 
+ 
+finModal?.addEventListener("click", (e)=>{ if(e.target===finModal) closeFinModal(); }); 
+ 
+segIncome?.addEventListener("click", ()=>setFinMode("income")); 
+ 
+segExpense?.addEventListener("click", ()=>setFinMode("expense")); 
+ 
+finDoneBtn?.addEventListener("click", submitFinForm); 
+ 
+ 
+renderObjects(); 
+ 
+recalcHome(); 
+ 
+document.getElementById("objectInput").value=""; 
+ 
+ 
+function renderFinance(){ 
+ 
+const sumIncome = document.getElementById("sumIncome"); 
+ 
+const sumExpense = document.getElementById("sumExpense"); 
+ 
+const incomeList = document.getElementById("incomeList"); 
+ 
+const expenseList = document.getElementById("expenseList"); 
+ 
+ 
+const incomeTotal = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+ 
+const expenseTotal = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+ 
+if(sumIncome) sumIncome.textContent = fmtRub(incomeTotal); 
+ 
+if(sumExpense) sumExpense.textContent = fmtRub(expenseTotal); 
+ 
+ 
+const groupBy = (arr)=>{ 
+ 
+const m = new Map(); 
+ 
+arr.forEach(e=>{ 
+ 
+const key = (e.counterparty||"Не указано").trim(); 
+ 
+m.set(key, (m.get(key)||0) + (Number(e.amount)||0)); 
+ 
+}); 
+ 
+return Array.from(m.entries()).sort((a,b)=>b[1]-a[1]); 
+ 
+}; 
+ 
+ 
+const makeRows = (pairs, colorClass)=>{ 
+ 
+if(!pairs.length) return '<div class="muted">Пока пусто</div>'; 
+ 
+return pairs.slice(0,30).map(([name,sum])=>` 
+ 
+<div class="list-row"> 
+ 
+<div class="name">${escapeHtml(name)}</div> 
+ 
+<div class="amt ${colorClass}">${fmtRub(sum)}</div> 
+ 
+</div> 
+ 
+`).join(""); 
+ 
+}; 
+ 
+ 
+if(incomeList) incomeList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="income")), "green"); 
+ 
+if(expenseList) expenseList.innerHTML = makeRows(groupBy(financeEntries.filter(e=>e.type==="expense")), "red"); 
+ 
+ 
+// refresh home chart + KPIs 
+ 
+recalcHome(); 
+ 
+} 
+ 
+// FIX: renderObjects was missing as a function in your text dump. 
+// Keeping your original behavior, but wrapping it into a function so calls won't break. 
+function renderObjects(){ 
+let list=document.getElementById("objectList"); 
+ 
+if(!list) return; 
+list.innerHTML=""; 
+objects.forEach(o=>{ 
+ 
+let div=document.createElement("div"); 
+ 
+div.className="card"; 
+ 
+div.innerText=o; 
+ 
+list.appendChild(div); 
+ 
+}); 
+} 
+ 
+ 
+function drawChart(){ 
+ 
+const canvas=document.getElementById("chart"); 
+ 
+if(!canvas) return; 
+ 
+const ctx=canvas.getContext("2d"); 
+ 
+canvas.width=350; canvas.height=200; 
+ 
+ 
+let totalIncome = financeEntries.filter(e=>e.type==="income").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+ 
+let totalExpense = financeEntries.filter(e=>e.type==="expense").reduce((a,b)=>a+(Number(b.amount)||0),0); 
+ 
+let profit=totalIncome-totalExpense; 
+ 
+ 
+let percent=(totalExpense/(totalIncome||1))*180; 
+ 
+ctx.clearRect(0,0,canvas.width,canvas.height); 
+ 
+ 
+// expense (red) 
+ 
+ctx.beginPath(); 
+ 
+ctx.arc(175,180,150,Math.PI,Math.PI+(percent*Math.PI/180)); 
+ 
+ctx.lineWidth=22; ctx.strokeStyle="#ff4d4d"; ctx.stroke(); 
+ 
+ 
+// income remainder (green) 
+ 
+ctx.beginPath(); 
+ 
+ctx.arc(175,180,150,Math.PI+(percent*Math.PI/180),2*Math.PI); 
+ 
+ctx.lineWidth=22; ctx.strokeStyle="#00ff9d"; ctx.stroke(); 
+ 
+ 
+// Update Home KPIs 
+ 
+const fmt = (n)=>("₽ "+Math.round(n).toLocaleString("ru-RU")); 
+ 
+const kIncome = document.getElementById("kIncome"); 
+ 
+const kExpense = document.getElementById("kExpense"); 
+ 
+const heroProfit = document.getElementById("heroProfit"); 
+ 
+const kMargin = document.getElementById("kMargin"); 
+ 
+ 
+if(kIncome) kIncome.textContent = fmt(totalIncome); 
+ 
+if(kExpense) kExpense.textContent = fmt(totalExpense); 
+ 
+if(heroProfit) heroProfit.textContent = fmt(profit); 
+ 
+if(kMargin){ 
+ 
+const margin = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
+ 
+kMargin.textContent = margin + "%"; 
+ 
+} 
+ 
+ 
+// Click -> show percentages 
+ 
+canvas.onclick=function(){ 
+ 
+const expP = totalIncome>0 ? Math.round((totalExpense/totalIncome)*100) : 0; 
+ 
+const profP = totalIncome>0 ? Math.round((profit/totalIncome)*100) : 0; 
+ 
+const heroPercent = document.getElementById("heroPercent"); 
+ 
+if(heroPercent){ 
+ 
+heroPercent.textContent = "Расход: " + expP + "% • Прибыль: " + profP + "%"; 
+ 
+}else{ 
+ 
+alert("Доход: "+fmt(totalIncome)+"\nРасход: "+fmt(totalExpense)+"\nПрибыль: "+fmt(profit)); 
+ 
+} 
+ 
+}; 
+ 
+} 
+ 
+function renderCalendar(){ 
+ 
+// legacy calendar renderer — guard so it will NOT overwrite Calendar v2 UI 
+let grid=document.getElementById("calendarGrid"); 
+if(!grid) return; 
+if(grid.querySelector("#calGrid")) return; // v2 exists -> do nothing 
+ 
+grid.innerHTML=""; 
+for(let i=1;i<=30;i++){ 
+ 
+let day=document.createElement("div"); 
+ 
+day.className="calendar-day"; 
+ 
+day.innerText=i; 
+ 
+day.onclick=function(){day.classList.toggle("marked");} 
+ 
+grid.appendChild(day); 
+ 
+} 
+ 
+} 
+ 
+function addDecision(){ 
+ 
+let text=document.getElementById("decisionInput").value; 
+ 
+if(!text)return; 
+ 
+decisions.push(text); 
+ 
+localStorage.setItem("decisions",JSON.stringify(decisions)); 
+ 
+renderDecisions(); recalcHome(); 
+ 
+document.getElementById("decisionInput").value=""; 
+ 
+} 
+ 
+function renderDecisions(){ 
+ 
+let list=document.getElementById("decisionList"); 
+ 
+list.innerHTML=""; 
+ 
+decisions.forEach(d=>{ 
+ 
+let div=document.createElement("div"); 
+ 
+div.className="card"; 
+ 
+div.innerText=d; 
+ 
+list.appendChild(div); 
+ 
+}); 
+ 
+} 
+ 
+// init (order matters for Calendar v2) 
+bindCalendarUI(); 
+renderCalendarV2(); 
+ 
+renderObjects(); 
+ 
+renderFinance(); 
+ 
+renderCalendar(); // kept, but now protected (won't delete v2) 
+ 
+renderDecisions(); recalcHome(); 
+ 
+drawChart(); 
+ 
+recalcHome(); 
+ 
+</script> 
+ 
+</body> 
+ 
 </html> 
-
  
